@@ -4042,10 +4042,6 @@ namespace olc
 
 		uint32_t CreateTexture(const uint32_t width, const uint32_t height, const bool filtered, const bool clamp) override
 		{
-			ID3D11ShaderResourceView* trash_memV = nullptr; //fine to have a tmp
-			ID3D11Resource* trash_memT = nullptr;
-			ID3D11UnorderedAccessView* trash_memU = nullptr;
-
 			UNUSED(width);
 			UNUSED(height);
 
@@ -4131,7 +4127,10 @@ namespace olc
 // | START RENDERER: DX11 (dunno the feature set needed yet)  (muh Win32API)      |
 // O--------------------------------- ---------------------------------------------O
 
-#if defined(OLC_GFX_DIRECTX11)
+#if defined(OLC_GFX_DIRECTX11) //TODO: MEMORY MANAGE AND CLEAN LEAKS
+
+//TODO: rectangles are flipped around and sqewed on my personal project - and animated sprites are fully messed up - use nsight on opengl [version forces this] and renderdoc on dx11 to diagnose discrepancy
+
 template<typename T>
 inline void SafeRelease(T& ptr)
 {
@@ -4183,7 +4182,7 @@ typedef EGLBoolean(locSwapInterval_t)(EGLDisplay display, EGLint interval);
 namespace olc
 {
 	//not templating to keep the opengl 3.3 function delclaration organisation of up here for all assisting functions
-	
+
 	constexpr size_t OLC_MAX_VERTS = 128;
 
 	class Renderer_DX11 : public olc::Renderer
@@ -4207,11 +4206,13 @@ namespace olc
 		ID3D11Texture2D* dxDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* dxDepthStencilView = nullptr;
 		ID3D11DepthStencilState* dxDepthStencilState = nullptr;
-		
+
 		ID3D11RasterizerState* dxRasterizerStateF = nullptr;
 		ID3D11RasterizerState* dxRasterizerStateW = nullptr;
 
 		ID3D11BlendState* dxBlendState = nullptr;
+		ID3D11BlendState* dxBlendStateDefault = nullptr;
+
 		D3D11_VIEWPORT dxViewport;
 #endif
 #endif
@@ -4224,7 +4225,7 @@ namespace olc
 #endif
 
 	private:
-// my goal with this dx imp was to copy how the Opengl one works in such a way that adding features and expanssion is easy and not limited by openGL limits - so it will just work like opengl from the start (albet whilst working on AMD hardware well)
+		// my goal with this dx imp was to copy how the Opengl one works in such a way that adding features and expanssion is easy and not limited by openGL limits - so it will just work like opengl from the start (albet whilst working on AMD hardware well)
 		ID3D11PixelShader* m_PS = 0;
 		ID3D11PixelShader* m_PSLayer = 0;
 		ID3D11VertexShader* m_VS = 0;
@@ -4279,7 +4280,7 @@ namespace olc
 		float camPitch = 0.0f;
 
 
-		
+
 		//since indices look to not be unique in the original code; i'll just keep that the same in this code
 		struct locVertex
 		{
@@ -4295,7 +4296,7 @@ namespace olc
 			float col[4]; // XMFlOAT 4
 		};
 
-		locVertex pVertexMem[OLC_MAX_VERTS];
+		locVertexF pVertexMem[OLC_MAX_VERTS];
 
 		ID3D11InputLayout* dxInputLayout;
 
@@ -4516,7 +4517,7 @@ namespace olc
 
 		void PrepareDevice() override
 		{
-			
+
 #if defined(OLC_PLATFORM_GLUT)
 			//glutInit has to be called with main() arguments, make fake ones
 			int argc = 0;
@@ -4553,11 +4554,11 @@ namespace olc
 #if _DEBUG
 			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
 #endif
-//			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
+			//			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
 
-			/*
-			// Set Vertical Sync
-			*/
+						/*
+						// Set Vertical Sync
+						*/
 
 			DEVMODEA WinMonitorInfo;
 
@@ -4646,7 +4647,7 @@ namespace olc
 
 			depthStencilStateDesc.DepthEnable = TRUE; // enable depth testing
 			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
+			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
 			depthStencilStateDesc.StencilEnable = FALSE;
 			dxDevice->CreateDepthStencilState( //make depth stencil state
 				&depthStencilStateDesc, //descriptor of depth stencil
@@ -4669,7 +4670,7 @@ namespace olc
 			dxDevice->CreateRasterizerState( //make rasterizer state
 				&rasterizerDesc,  //rasterizer descriptor
 				&dxRasterizerStateF); //rasterizer state output
-			
+
 			rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 
 			dxDevice->CreateRasterizerState( //make rasterizer state
@@ -4767,10 +4768,10 @@ namespace olc
 				"float4 PositionWS : TEXCOORD1;};\n"
 				"float4 SimplePS(PixelShaderInput IN) : SV_TARGET{\n"
 				"float4 textureColor = shaderTexture.Sample(SampleType, IN.tex);\n"
-				"textureColor.r += IN.color.r;\n"
-				"textureColor.g += IN.color.g;\n"
-				"textureColor.b += IN.color.b;\n"
-				"textureColor.w += IN.color.w;\n"
+				"textureColor.r *= IN.color.r/255;\n" //may be *= and change reading...
+				"textureColor.g *= IN.color.g/255;\n"
+				"textureColor.b *= IN.color.b/255;\n"
+				"textureColor.w *= IN.color.w/255;\n"
 				"return textureColor;}");
 
 			m_PS = LoadShader<ID3D11PixelShader>(&strFS, "SimplePS", "latest"); //pixel shader is pre defined and made using openGL here
@@ -4792,13 +4793,13 @@ namespace olc
 				"float4 textureColor = IN.color;\n"
 				"return textureColor;}");
 			m_PSLayer = LoadShader<ID3D11PixelShader>(&strFSL, "LayerPS", "latest");
-			
+
 			const std::string strVS = std::string(
 #if defined(__arm__) || defined(OLC_PLATFORM_EMSCRIPTEN)
 				"#version 300 es\n"
 				"precision mediump float;"
 #else
-		//		"#version ...\n"
+				//		"#version ...\n"
 #endif
 				"cbuffer PerApplication : register(b0){\n"
 				"matrix projectionMatrix;}\n"
@@ -4844,7 +4845,7 @@ namespace olc
 
 
 			//m_nQuadShader = make pixel shader and vertex into effect? no idea on opengl and why you need to be explicit with program creation... driver tom-foolery is OpenGL I guess...
-			
+
 			// Create Quad
 			D3D11_BUFFER_DESC vertexBufferDesc; //describe buffer we will make
 			ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
@@ -4869,26 +4870,26 @@ namespace olc
 			UAVdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			UAVdesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			UAVdesc.Buffer.FirstElement = 0;
-			UAVdesc.Buffer.NumElements = sizeof(pVertexMem) / sizeof(locVertex); //doin the math rather than OLC_MAX_VERTS
+			UAVdesc.Buffer.NumElements = sizeof(pVertexMem) / sizeof(locVertexF); //doin the math rather than OLC_MAX_VERTS
 			UAVdesc.Buffer.Flags = 0;
 
-//			dxDevice->CreateUnorderedAccessView(m_vbQuad, &UAVdesc, &m_UAVS);
+			//			dxDevice->CreateUnorderedAccessView(m_vbQuad, &UAVdesc, &m_UAVS);
 
-			// Create and initialize the index buffer.
+						// Create and initialize the index buffer.
 
-			//create layer quad buffer
+						//create layer quad buffer
 			locVertexF verts[4] = { //make verticies tmp for fun
 			{ {-1.0f, -1.0f, 1.0}, { 0.0f, 1.0f}, {0,0,0,0}},
 			{ {+1.0f, -1.0f, 1.0}, {1.0f, 1.0f}, {0,0,0,0}},
 			{ {-1.0f, +1.0f, 1.0}, {0.0f, 0.0f}, {0,0,0,0}},
 			{ {+1.0f, +1.0f, 1.0}, {1.0f, 0.0f}, {0,0,0,0}},
 			};
-						// Create Quad
+			// Create Quad
 			ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
 			vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER; //how to bind buffer 
 
-			vertexBufferDesc.ByteWidth = sizeof(locVertexF)*4; //size of buffer --> make it the size of verticiesBuff*VertexOBJ
+			vertexBufferDesc.ByteWidth = sizeof(locVertexF) * 4; //size of buffer --> make it the size of verticiesBuff*VertexOBJ
 			vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; // 0 means no CPU acsess
 
 			vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC; //resource flag - 0 means none
@@ -4898,29 +4899,33 @@ namespace olc
 			resourceData.pSysMem = &verts; //Vertex data for sub source
 
 			dxDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &m_vbLayer); //create buffer, using data settings struct, struct of data, and vertex buffer output - this is also used to create other buffer styles
-			
+
 			//DXGI_FORMAT_R32_TYPELESS
 			UAVdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			UAVdesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			UAVdesc.Buffer.FirstElement = 0;
-			UAVdesc.Buffer.NumElements = sizeof(m_vbLayer) / sizeof(locVertex); //doin the math rather than OLC_MAX_VERTS
+			UAVdesc.Buffer.NumElements = sizeof(m_vbLayer) / sizeof(locVertexF); //doin the math rather than OLC_MAX_VERTS
 			UAVdesc.Buffer.Flags = 0;
 
-		//	dxDevice->CreateUnorderedAccessView(m_vbLayer, &UAVdesc, &m_UAVLayer);
+			//	dxDevice->CreateUnorderedAccessView(m_vbLayer, &UAVdesc, &m_UAVLayer);
 
 
 
 			UINT dxIndiceArr[OLC_MAX_VERTS]; //not unique to follow the trends of how OpenGL works... not removing doubled in other words - although I already know how to make it more dynamic - don't know if anyone wants it
-			
+
 			for (int i = 0; i < OLC_MAX_VERTS; i++) {//lay fill rather than transform iterator because readability :')
 				dxIndiceArr[i] = i;
 			}
+			//UINT dxIndiceArr[] = { 0, 1, 2,
+			//	  3, 0};
+
+			dxIndiceArr[4] = 0; //TODO: I may have to make every 4 a ratio of 4 to draw in order of quads since I think thats how olc works
 
 			D3D11_BUFFER_DESC indexBufferDesc; //buffer obj
 			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC)); //alloc
 
 			indexBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER; //type of buffer m8 - same logic as vertex
-			indexBufferDesc.ByteWidth = sizeof(UINT)*OLC_MAX_VERTS;
+			indexBufferDesc.ByteWidth = sizeof(UINT) * OLC_MAX_VERTS;
 			indexBufferDesc.CPUAccessFlags = 0;
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -4940,14 +4945,14 @@ namespace olc
 
 			indexBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 
-			UINT dxIndiceArrLayer[5] = { 0,1,2,3,4 };
+			UINT dxIndiceArrLayer[6] = { 0,1,2,3,4 };
 
 			resourceData.pSysMem = &dxIndiceArrLayer; //indice data for sub source
 
 			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuadLayer); //make buffer
 
 
-			
+
 
 
 			D3D11_BUFFER_DESC constantBufferDesc;
@@ -4962,7 +4967,7 @@ namespace olc
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Frame]); //make const buffer for frame
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Object]); //make const buffer for object 
 
-			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), /*clientWidth / clientHeight*/1, 0.1f, 100.0f); 
+			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), /*clientWidth / clientHeight*/1, 0.1f, 100.0f);
 			dxDeviceContext->UpdateSubresource( //change sub resource data on the fly for [can be done for constant buffer]
 				dxConstantBuffers[CB_Application],  // destination of sub resource - stored inside CB_application const buffer
 				0,  /// destination of sub resource
@@ -4977,6 +4982,22 @@ namespace olc
 			camRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
 			camUp = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 			camTarget = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+
+
+			D3D11_BLEND_DESC blendVal;
+			blendVal.AlphaToCoverageEnable = false;
+			blendVal.IndependentBlendEnable = false;
+			blendVal.RenderTarget[0].BlendEnable = true;
+			blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+			blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
+			blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
+			blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
+			blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+			blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
+			blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
+			dxDevice->CreateBlendState(&blendVal, &dxBlendStateDefault);
+
+			dxDevice->CreateBlendState(&blendVal, &dxBlendState);
 
 
 			// Create blank texture for spriteless decals
@@ -5061,20 +5082,20 @@ namespace olc
 
 				switch (mode)
 				{
-				case olc::DecalMode::NORMAL: 
+				case olc::DecalMode::NORMAL:
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
 					break;
-				case olc::DecalMode::ADDITIVE: //glBlendFunc(GL_SRC_ALPHA, GL_ONE); 
+				case olc::DecalMode::ADDITIVE: //glBlendFunc(GL_SRC_ALPHA, GL_ONE);  TODO: FIX THESE BLENDS
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
@@ -5138,7 +5159,7 @@ namespace olc
 
 				nDecalMode = mode;
 				dxDevice->CreateBlendState(&blendVal, &dxBlendState);
-				
+
 			}
 		}
 
@@ -5150,16 +5171,16 @@ namespace olc
 			dxDeviceContext->IASetInputLayout(
 				dxInputLayout);
 
-			
+
 			dxDeviceContext->IASetIndexBuffer(
 				m_viQuadLayer, //index buffer array pointer
 				DXGI_FORMAT_R32_UINT, //format of DXGI format
 				0); //offset
-			
+
 
 			dxDeviceContext->IASetPrimitiveTopology(
 				D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
-			
+
 			dxDeviceContext->VSSetConstantBuffers( // bind constant buffer with matrix data to Vertex shader stage
 				0, // index of const buffer    --> // D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT – 1
 				3, //number of buffers - obejct, frame, and application buffers are 3
@@ -5176,9 +5197,13 @@ namespace olc
 		void LayerPixelStage() {
 			ID3D11ShaderResourceView* empty = nullptr;
 			dxDeviceContext->PSSetShader( //pixel state to bind to shader state
-				m_PSLayer,  // pointer to shader to bind
+				m_PS,  // pointer to shader to bind
 				nullptr, //array of class instance - can be disabled
 				0); //number of instance
+
+			dxDeviceContext->PSSetShaderResources(0, 1, &DecalTSV[2]); //2 is back buffer tex
+
+			dxDeviceContext->PSSetSamplers(0, 1, &DecalSamp[2]); //pass sampler to pixel shader
 
 			dxDeviceContext->PSSetConstantBuffers( //pixel state to bind to shader state
 				0,  // pointer to shader to bind
@@ -5206,12 +5231,12 @@ namespace olc
 				&dxRenderTargetView, //setup array of render view  - can be null
 				dxDepthStencilView); //setup array of stencil view - can be null
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			dxDeviceContext->OMSetBlendState(NULL, bState, 0xffffffff); //FIX BLEND VALUES!!
+			dxDeviceContext->OMSetBlendState(dxBlendStateDefault, bState, 0xffffffff); //FIX BLEND VALUES!!
 			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
 		}
 
 		void LayerIndexDraw() {
-		//	assert(dxDeviceContext);
+			//	assert(dxDeviceContext);
 
 
 			dxDeviceContext->DrawIndexed( //draw indice+vertex
@@ -5230,16 +5255,16 @@ namespace olc
 
 		}
 
-		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override
+		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override //TODO: make index buffer universal in usage to work - as comented on index buffer creation - also test layers
 		{
-//			locBindBuffer(0x8892, m_vbQuad); //bind buffer array to opengl context
-			
+			//			locBindBuffer(0x8892, m_vbQuad); //bind buffer array to opengl context
+
 			locVertexF verts[5] = { //make verticies with my clean dumb abstraction which I prob don't need - my spaget code
 				{{-1.0f, -1.0f, 0.0f}, {0.0f * scale.x + offset.x, 1.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
 				{{-1.0f, 1.0f, 0.0f}, {1.0f * scale.x + offset.x, 1.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
 				{{1.0f, 1.0f, 0.0f}, {0.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
 				{{1.0f, -1.0f, 0.0f}, {1.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
-				{{-1.0f, -1.0f, .0f}, {1.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
+				{{-1.0f, -1.0f, 0.0f}, {1.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, {tint.r,tint.b,tint.g,tint.a}},
 			};
 
 			//update m_vbQuad with layer data
@@ -5247,7 +5272,7 @@ namespace olc
 			//ID3D11ShaderResourceView* unbind = nullptr;
 			//dxDeviceContext->IASetVertexBuffers(0, 1, unbind, NULL, 0);
 			HRESULT hr = dxDeviceContext->Map(m_vbLayer, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-			memcpy(resource.pData, &verts, sizeof(locVertexF)*5);
+			memcpy(resource.pData, &verts, sizeof(locVertexF) * 5);
 			dxDeviceContext->Unmap(m_vbLayer, 0);
 			LayerLayoutVertexIndexStageSet();
 			LayerPixelStage();
@@ -5255,17 +5280,17 @@ namespace olc
 			LayerOutputMergeStage();
 			LayerIndexDraw();
 			LayerShaderUnset();
-	//		locBufferData(0x8892, sizeof(locVertex) * 4, verts, 0x88E0);
-	
-			//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		
+			//		locBufferData(0x8892, sizeof(locVertex) * 4, verts, 0x88E0);
+
+					//glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
 		}
 
 		void DecalLayoutVertexIndexStageSet() {
 			const UINT vertexStride = sizeof(locVertexF); //
 			const UINT offset = 0; //
 
-			dxDeviceContext->IASetVertexBuffers(0, 1, &m_vbQuad, &vertexStride, 0); //bind vertex buffer to device context
+			dxDeviceContext->IASetVertexBuffers(0, 1, &m_vbQuad, &vertexStride, &offset); //bind vertex buffer to device context
 			dxDeviceContext->IASetInputLayout(
 				dxInputLayout);
 			dxDeviceContext->IASetPrimitiveTopology(
@@ -5328,24 +5353,27 @@ namespace olc
 				&dxRenderTargetView, //setup array of render view  - can be null
 				dxDepthStencilView); //setup array of stencil view - can be null
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			dxDeviceContext->OMSetBlendState(NULL, bState, 0xffffffff); //FIX BLEND VALUES!!
+			dxDeviceContext->OMSetBlendState(dxBlendState, bState, 0xffffffff); //FIX BLEND VALUES!!
 			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
 		}
 
-		void DecalIndexDraw() {
+		void DecalIndexDraw(const olc::DecalInstance& decal) {
 			//assert(dxDeviceContext);
 
 			dxDeviceContext->DrawIndexed( //draw indice+vertex
-				(OLC_MAX_VERTS * 2), //indice count - meh - 128 verticies and lazily made 128.. so just double it for easiness for now 
+				(decal.pos.size() + 1), //indice count - meh - 128 verticies and lazily made 128.. so just double it for easiness for now 
 				0,  //start index location
 				0); //base vertex location
+
+
 		}
 		void DecalShaderUnset() {
+
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			dxDeviceContext->VSSetShader(nullptr, nullptr, 0);
 			dxDeviceContext->PSSetShader(nullptr, nullptr, 0);
 			dxDeviceContext->OMSetBlendState(NULL, bState, 0xffffffff); //FIX BLEND VALUES!!
-			dxDeviceContext->PSSetShaderResources(0, 1, NULL); //no texture...
+			//dxDeviceContext->PSSetShaderResources(0, 1, NULL); //no texture...
 			dxDeviceContext->PSSetSamplers(0, 1, &m_Sample); //pass sampler to pixel shader
 
 		}
@@ -5364,17 +5392,18 @@ namespace olc
 			//locBindBuffer(0x8892, m_vbQuad);
 
 			for (uint32_t i = 0; i < decal.points; i++)
-				pVertexMem[i] = { { decal.pos[i].x, decal.pos[i].y, decal.w[i] }, { decal.uv[i].x, decal.uv[i].y }, decal.tint[i] };
+				pVertexMem[i] = { { decal.pos[i].x, decal.pos[i].y, 0.0f }, { decal.uv[i].x, decal.uv[i].y }, {float(decal.tint[i].r),float(decal.tint[i].g),float(decal.tint[i].b),float(decal.tint[i].a)} };
 
 
 
-//			locBufferData(0x8892, sizeof(locVertex) * decal.points, pVertexMem, 0x88E0);
+
+			//			locBufferData(0x8892, sizeof(locVertex) * decal.points, pVertexMem, 0x88E0);
 
 
 
 			if (nDecalMode == DecalMode::WIREFRAME) {
 				D3D11_MAPPED_SUBRESOURCE resource;
-				dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
+				//dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
 				dxDeviceContext->Map(m_vbQuad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 				memcpy(resource.pData, pVertexMem, sizeof(pVertexMem));
 				dxDeviceContext->Unmap(m_vbQuad, 0);
@@ -5382,12 +5411,12 @@ namespace olc
 				DecalPixelStage(iterator);
 				DecalRastStage(1);
 				DecalOutputMergeStage();
-				DecalIndexDraw();
+				DecalIndexDraw(decal);
 				DecalShaderUnset();
 			}
 			else {
 				D3D11_MAPPED_SUBRESOURCE resource;
-				dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
+				//dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
 				dxDeviceContext->Map(m_vbQuad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 				memcpy(resource.pData, pVertexMem, sizeof(pVertexMem));
 				dxDeviceContext->Unmap(m_vbQuad, 0);
@@ -5395,7 +5424,7 @@ namespace olc
 				DecalPixelStage(iterator);
 				DecalRastStage(0);
 				DecalOutputMergeStage();
-				DecalIndexDraw();
+				DecalIndexDraw(decal);
 				DecalShaderUnset();
 			}
 		}
@@ -5485,7 +5514,7 @@ namespace olc
 			//tmpSampleDesc.BorderColor[0] =
 			tmpSampleDesc.MinLOD = 1;
 			tmpSampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
-			
+
 			if (filtered)
 			{
 				//D3D11_FILTER_MIN_MAG_MIP_LINEAR
@@ -5525,7 +5554,7 @@ namespace olc
 				//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			}
 #if !defined(OLC_PLATFORM_EMSCRIPTEN)
-		//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+			//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 #endif
 
 			dxDevice->CreateTexture2D(&gpuTexDesc, NULL, &gpuTex);
@@ -5563,6 +5592,13 @@ namespace olc
 
 		void UpdateTexture(uint32_t id, olc::Sprite* spr) override
 		{
+
+			D3D11_MAPPED_SUBRESOURCE resource;
+			dxDeviceContext->Map(DecalTSR[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+			memcpy(resource.pData, &spr->GetData()[0], spr->pColData.size() * sizeof(olc::Pixel));
+			//memcpy(resource.pData, &verts, sizeof(locVertexF)*5); //TODO: I may need to do a diffrent way for layers to keep back buffer
+			dxDeviceContext->Unmap(DecalTSR[id], 0);
+
 			//UNUSED(id);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spr->width, spr->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
 		}
@@ -5574,7 +5610,8 @@ namespace olc
 
 		void ApplyTexture(uint32_t id) override
 		{
-		//	glBindTexture(GL_TEXTURE_2D, id);
+
+			//	glBindTexture(GL_TEXTURE_2D, id);
 		}
 
 		void ClearBuffer(olc::Pixel p, bool bDepth) override
@@ -5591,6 +5628,7 @@ namespace olc
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else
 			//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
+			//TODO: fix a way to update viewport - also to not hardcode vsync and initial size
 #endif
 		}
 	};
