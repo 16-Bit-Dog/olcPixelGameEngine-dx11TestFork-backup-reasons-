@@ -4130,7 +4130,7 @@ namespace olc
 #if defined(OLC_GFX_DIRECTX11) //TODO: MEMORY MANAGE AND CLEAN LEAKS
 
 //TODO: rectangles are flipped around and sqewed on my personal project - and animated sprites are fully messed up - use nsight on opengl [version forces this] and renderdoc on dx11 to diagnose discrepancy
-
+//TODO: use faster rendering mode - using legacy mode for debug reasons switch later for prob double perf
 template<typename T>
 inline void SafeRelease(T& ptr)
 {
