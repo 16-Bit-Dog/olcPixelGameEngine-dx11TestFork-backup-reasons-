@@ -4573,8 +4573,8 @@ namespace olc
 
 
 			swapChainDesc.BufferCount = 1;
-			swapChainDesc.BufferDesc.Width = 640; //tmp
-			swapChainDesc.BufferDesc.Height = 640; //tmp
+			swapChainDesc.BufferDesc.Width = 640; //tmp val
+			swapChainDesc.BufferDesc.Height = 640; //tmp val
 			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // or DXGI_FORMAT_R8G8B8A8_UNORM
 			swapChainDesc.BufferDesc.RefreshRate = refreshRateStatic; //refresh rate
 			swapChainDesc.Windowed = true; //later make it bFullScreen
@@ -4584,6 +4584,7 @@ namespace olc
 			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; //cpu access optio nfor back buffer:
 
+			//may need to set flag DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE to use GetDC( for render target output window... although HWND casting does work for now...
 /*
 			volatile bool painful = IsWindow(
 				(HWND)(params[0])
@@ -4914,9 +4915,9 @@ namespace olc
 			//	dxIndiceArr[i] = i;
 			//}
 			UINT dxIndiceArr[4] = { 0, 1, 3,
-				  2}; //TODO: don't know how I will properly do 128 verticies with the same quad buffer since I did not look at the poly code - I will make a new index buffer for 3d stuff with max - same for fun shader stuff I will later do
+				  2 }; //TODO: don't know how I will properly do 128 verticies with the same quad buffer since I did not look at the poly code - I will make a new index buffer for 3d stuff with max - same for fun shader stuff I will later do
 			//I may do a if else for draw decal and determining max vert indice if needed...
-			
+
 			D3D11_BUFFER_DESC indexBufferDesc; //buffer obj
 			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC)); //alloc
 
@@ -5633,6 +5634,9 @@ namespace olc
 #if defined(OLC_PLATFORM_GLUT)
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else
+
+			dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
+
 			//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
 			//TODO: fix a way to update viewport - also to not hardcode vsync and initial size
 #endif
