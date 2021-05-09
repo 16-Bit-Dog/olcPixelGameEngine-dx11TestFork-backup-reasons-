@@ -4939,7 +4939,7 @@ namespace olc
 			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC)); //alloc
 
 			indexBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER; //type of buffer m8 - same logic as vertex
-			indexBufferDesc.ByteWidth = sizeof(UINT) * 4;
+			indexBufferDesc.ByteWidth = sizeof(UINT) * 5;
 			indexBufferDesc.CPUAccessFlags = 0;
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
