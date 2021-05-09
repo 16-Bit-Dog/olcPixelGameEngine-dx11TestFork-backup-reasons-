@@ -4532,6 +4532,7 @@ namespace olc
 
 		olc::rcode CreateDevice(std::vector<void*> params, bool bFullScreen, bool bVSYNC) override
 		{
+			bSync = bVSYNC;
 			// Create dx Context, device, and swap chain
 #if defined(OLC_PLATFORM_WINAPI)
 
@@ -4565,7 +4566,9 @@ namespace olc
 			refreshRateStatic.Numerator = WinMonitorInfo.dmDisplayFrequency; //0 is no refreshrate
 			refreshRateStatic.Denominator = 1;
 
-			if (!bVSYNC) refreshRateStatic.Numerator = 0; //if vsync is false, make no limit
+			if (bVSYNC == false) {
+				refreshRateStatic.Numerator = 0;
+			}//if vsync is false, make no limit
 
 
 			DXGI_SWAP_CHAIN_DESC swapChainDesc;
@@ -4590,7 +4593,7 @@ namespace olc
 				(HWND)(params[0])
 			);
 */
-			volatile HRESULT hr = D3D11CreateDeviceAndSwapChain(  //create swap chain --> 
+			D3D11CreateDeviceAndSwapChain(  //create swap chain --> 
 				nullptr, //A pointer to the video adapter to use --> nothing means default for program launch is used
 				D3D_DRIVER_TYPE_HARDWARE, //direct 3d driver type: unknown [dunno], hardware [features in hardware], refrence [accuracy over speed], zero render ability driver, software [software driver - very slow], warp driver [9_1-10_1 support of high prof implment]
 				nullptr, //dll for software rasterizer if software driver is used
