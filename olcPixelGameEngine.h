@@ -5638,6 +5638,8 @@ namespace olc
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else
 
+
+		//	dxDeviceContext->ClearState(); //<-- meh, warnings that hurt perf are ignored TODO: fix this resize buffer thing as needed
 			dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
 
 			//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
