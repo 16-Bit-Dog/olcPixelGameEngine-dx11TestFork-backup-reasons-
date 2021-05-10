@@ -5578,9 +5578,6 @@ namespace olc
 
 			DecalSamp.push_back(trash_memSamp);
 
-
-
-
 			return id;
 		}
 
@@ -5603,11 +5600,25 @@ namespace olc
 		void UpdateTexture(uint32_t id, olc::Sprite* spr) override
 		{
 
-			D3D11_MAPPED_SUBRESOURCE resource;
-			dxDeviceContext->Map(DecalTSR[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-			memcpy(resource.pData, &spr->GetData()[0], spr->pColData.size() * sizeof(olc::Pixel));
-			//memcpy(resource.pData, &verts, sizeof(locVertexF)*5); //TODO: I may need to do a diffrent way for layers to keep back buffer
-			dxDeviceContext->Unmap(DecalTSR[id], 0);
+				D3D11_MAPPED_SUBRESOURCE resource;
+				
+				//ZeroMemory(&resource, sizeof(D3D11_MAPPED_SUBRESOURCE)); //64
+				
+				dxDeviceContext->Map(DecalTSR[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+//				//resource.RowPitch = sizeof(olc::Pixel) * spr->width;
+				//resource.DepthPitch = sizeof(olc::Pixel) * spr->width * spr->height;
+				BYTE* mappedData = reinterpret_cast<BYTE*>(resource.pData);
+				BYTE* buffer = reinterpret_cast<BYTE*>(spr->pColData.data());
+
+				for (int i = 0; i < spr->height; i++) {
+					memcpy(mappedData, buffer, spr->width * sizeof(olc::Pixel));
+					mappedData += resource.RowPitch;
+
+					buffer+=spr->width * sizeof(olc::Pixel);
+				}
+				//memcpy(resource.pData, &verts, sizeof(locVertexF)*5); //TODO: I may need to do a diffrent way for layers to keep back buffer
+				dxDeviceContext->Unmap(DecalTSR[id], 0);
+	//			resource.RowPitch = sizeof(olc::Pixel) * spr->width;
 
 			//UNUSED(id);
 			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spr->width, spr->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
@@ -5640,7 +5651,7 @@ namespace olc
 
 
 		//	dxDeviceContext->ClearState(); //<-- meh, warnings that hurt perf are ignored TODO: fix this resize buffer thing as needed
-			dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
+			//dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
 
 			//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
 			//TODO: fix a way to update viewport - also to not hardcode vsync and initial size
