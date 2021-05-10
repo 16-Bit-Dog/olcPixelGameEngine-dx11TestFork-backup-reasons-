@@ -4213,6 +4213,7 @@ namespace olc
 		D3D11_VIEWPORT dxViewport;
 #endif
 #endif
+		int WinVersion = 6; //this is obtuse for verification... but I'ma still do it for my own sanity
 		bool bSync = false;
 		olc::DecalMode nDecalMode = olc::DecalMode(-1); // Thanks Gusgo & Bispoo
 #if defined(OLC_PLATFORM_X11)
@@ -4574,8 +4575,37 @@ namespace olc
 			DXGI_SWAP_CHAIN_DESC swapChainDesc;
 			ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
+/*
+poll the windows version your self, since rendering *can* change based on user end (doubt it) - but else you can just unga-bunga "#define"
 
-			swapChainDesc.BufferCount = 1;
+#define OLC_GFX_DIRECTX11_FLIP_DISCARD //win 10
+#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8 
+else its win xp 
+
+flip discard is fastest unless you change the core renderer; next its flip sequential. Also stock discard is just bad... so yeah... I found it did worse for most things no matter the senario
+
+IsWindowsXXXOrGreater() from winAPI can do the polling for the user
+
+example:
+if(IsWindows8OrGreater()){
+	#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8
+}
+*/
+
+#if defined(OLC_GFX_DIRECTX11_FLIP_DISCARD)
+				WinVersion = 10;
+				swapChainDesc.BufferCount = 2; //if windows 7 use render flip 
+				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+#elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
+				WinVersion = 8;
+				swapChainDesc.BufferCount = 2; //if windows 7 use render flip
+				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+#else
+				WinVersion = 6; //assume XP since it does not matter
+				swapChainDesc.BufferCount = 1;
+				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+#endif
+
 			swapChainDesc.BufferDesc.Width = 640; //tmp val
 			swapChainDesc.BufferDesc.Height = 640; //tmp val
 			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; // or DXGI_FORMAT_R8G8B8A8_UNORM
@@ -4584,7 +4614,6 @@ namespace olc
 			swapChainDesc.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
 			swapChainDesc.SampleDesc.Count = 1;
 			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; //cpu access optio nfor back buffer:
 
 			//may need to set flag DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE to use GetDC( for render target output window... although HWND casting does work for now...
@@ -4593,6 +4622,7 @@ namespace olc
 				(HWND)(params[0])
 			);
 */
+
 			D3D11CreateDeviceAndSwapChain(  //create swap chain --> 
 				nullptr, //A pointer to the video adapter to use --> nothing means default for program launch is used
 				D3D_DRIVER_TYPE_HARDWARE, //direct 3d driver type: unknown [dunno], hardware [features in hardware], refrence [accuracy over speed], zero render ability driver, software [software driver - very slow], warp driver [9_1-10_1 support of high prof implment]
@@ -5411,7 +5441,7 @@ namespace olc
 				DecalRastStage(1);
 				DecalOutputMergeStage();
 				DecalIndexDraw(decal);
-				DecalShaderUnset();
+				//DecalShaderUnset();
 			}
 			else {
 				D3D11_MAPPED_SUBRESOURCE resource;
@@ -5424,7 +5454,7 @@ namespace olc
 				DecalRastStage(0);
 				DecalOutputMergeStage();
 				DecalIndexDraw(decal);
-				DecalShaderUnset();
+				//DecalShaderUnset();
 			}
 		}
 
@@ -5600,28 +5630,28 @@ namespace olc
 		void UpdateTexture(uint32_t id, olc::Sprite* spr) override
 		{
 
-				D3D11_MAPPED_SUBRESOURCE resource;
-				
-				//ZeroMemory(&resource, sizeof(D3D11_MAPPED_SUBRESOURCE)); //64
-				
-				dxDeviceContext->Map(DecalTSR[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
-//				//resource.RowPitch = sizeof(olc::Pixel) * spr->width;
-				//resource.DepthPitch = sizeof(olc::Pixel) * spr->width * spr->height;
-				BYTE* mappedData = reinterpret_cast<BYTE*>(resource.pData);
-				BYTE* buffer = reinterpret_cast<BYTE*>(spr->pColData.data());
+			D3D11_MAPPED_SUBRESOURCE resource;
 
-				for (int i = 0; i < spr->height; i++) {
-					memcpy(mappedData, buffer, spr->width * sizeof(olc::Pixel));
-					mappedData += resource.RowPitch;
+			//ZeroMemory(&resource, sizeof(D3D11_MAPPED_SUBRESOURCE)); //64
 
-					buffer+=spr->width * sizeof(olc::Pixel);
-				}
-				//memcpy(resource.pData, &verts, sizeof(locVertexF)*5); //TODO: I may need to do a diffrent way for layers to keep back buffer
-				dxDeviceContext->Unmap(DecalTSR[id], 0);
-	//			resource.RowPitch = sizeof(olc::Pixel) * spr->width;
+			dxDeviceContext->Map(DecalTSR[id], 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+			//				//resource.RowPitch = sizeof(olc::Pixel) * spr->width;
+							//resource.DepthPitch = sizeof(olc::Pixel) * spr->width * spr->height;
+			BYTE* mappedData = reinterpret_cast<BYTE*>(resource.pData);
+			BYTE* buffer = reinterpret_cast<BYTE*>(spr->pColData.data());
 
-			//UNUSED(id);
-			//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spr->width, spr->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
+			for (int i = 0; i < spr->height; i++) {
+				memcpy(mappedData, buffer, spr->width * sizeof(olc::Pixel));
+				mappedData += resource.RowPitch;
+
+				buffer += spr->width * sizeof(olc::Pixel);
+			}
+			//memcpy(resource.pData, &verts, sizeof(locVertexF)*5); //TODO: I may need to do a diffrent way for layers to keep back buffer
+			dxDeviceContext->Unmap(DecalTSR[id], 0);
+			//			resource.RowPitch = sizeof(olc::Pixel) * spr->width;
+
+					//UNUSED(id);
+					//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spr->width, spr->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
 		}
 
 		void ReadTexture(uint32_t id, olc::Sprite* spr) override
@@ -5650,11 +5680,11 @@ namespace olc
 #else
 
 
-		//	dxDeviceContext->ClearState(); //<-- meh, warnings that hurt perf are ignored TODO: fix this resize buffer thing as needed
-			//dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
+			//	dxDeviceContext->ClearState(); //<-- meh, warnings that hurt perf are ignored TODO: fix this resize buffer thing as needed
+				//dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
 
-			//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
-			//TODO: fix a way to update viewport - also to not hardcode vsync and initial size
+				//glViewport(pos.x, pos.y, size.x, size.y); <-- add this to dx11
+				//TODO: fix a way to update viewport - also to not hardcode vsync and initial size
 #endif
 		}
 	};
