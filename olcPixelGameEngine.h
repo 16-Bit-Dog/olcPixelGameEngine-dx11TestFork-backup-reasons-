@@ -4913,7 +4913,7 @@ namespace olc
 
 
 			UINT dxIndiceArr[OLC_MAX_VERTS];
-			for (int i = 0; i < OLC_MAX_VERTS; i+=4) {//lay fill rather than transform iterator because readability :')
+			for (int i = 0; i < OLC_MAX_VERTS; i+=4) {//since dx has no triangle fan - multi vertex will produce a diffrent result unless built around a triangle strip design - which triangle fan would work with - my method allows quads from pge to render right... I need a custom patch to let fans kinda work...
 					dxIndiceArr[i] = i;
 					dxIndiceArr[i + 1] = i + 1;
 					dxIndiceArr[i + 2] = i + 3;
