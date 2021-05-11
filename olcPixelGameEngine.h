@@ -4575,35 +4575,35 @@ namespace olc
 			DXGI_SWAP_CHAIN_DESC swapChainDesc;
 			ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
 
-/*
-poll the windows version your self, since rendering *can* change based on user end (doubt it) - but else you can just unga-bunga "#define"
+			/*
+			poll the windows version your self, since rendering *can* change based on user end (doubt it) - but else you can just unga-bunga "#define"
 
-#define OLC_GFX_DIRECTX11_FLIP_DISCARD //win 10
-#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8 
-else its win xp 
+			#define OLC_GFX_DIRECTX11_FLIP_DISCARD //win 10
+			#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8
+			else its win xp
 
-flip discard is fastest unless you change the core renderer; next its flip sequential. Also stock discard is just bad... so yeah... I found it did worse for most things no matter the senario
+			flip discard is fastest unless you change the core renderer; next its flip sequential. Also stock discard is just bad... so yeah... I found it did worse for most things no matter the senario
 
-IsWindowsXXXOrGreater() from winAPI can do the polling for the user
+			IsWindowsXXXOrGreater() from winAPI can do the polling for the user
 
-example:
-if(IsWindows8OrGreater()){
-	#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8
-}
-*/
+			example:
+			if(IsWindows8OrGreater()){
+				#define OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL //win 7 windows 8 enhancment and windows 8
+			}
+			*/
 
 #if defined(OLC_GFX_DIRECTX11_FLIP_DISCARD)
-				WinVersion = 10;
-				swapChainDesc.BufferCount = 2; //if windows 7 use render flip 
-				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+			WinVersion = 10;
+			swapChainDesc.BufferCount = 2; //if windows 7 use render flip 
+			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 #elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
-				WinVersion = 8;
-				swapChainDesc.BufferCount = 2; //if windows 7 use render flip
-				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+			WinVersion = 8;
+			swapChainDesc.BufferCount = 2; //if windows 7 use render flip
+			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
 #else
-				WinVersion = 6; //assume XP since it does not matter
-				swapChainDesc.BufferCount = 1;
-				swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+			WinVersion = 6; //assume XP since it does not matter
+			swapChainDesc.BufferCount = 1;
+			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 #endif
 
 			swapChainDesc.BufferDesc.Width = 640; //tmp val
@@ -4678,7 +4678,7 @@ if(IsWindows8OrGreater()){
 
 			depthStencilStateDesc.DepthEnable = TRUE; // enable depth testing
 			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_ALWAYS; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
+			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
 			depthStencilStateDesc.StencilEnable = FALSE;
 			dxDevice->CreateDepthStencilState( //make depth stencil state
 				&depthStencilStateDesc, //descriptor of depth stencil
