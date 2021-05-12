@@ -4203,6 +4203,7 @@ namespace olc
 		ID3D11Texture2D* dxDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* dxDepthStencilView = nullptr;
 		ID3D11DepthStencilState* dxDepthStencilState = nullptr;
+		ID3D11DepthStencilState* dxDepthStencilStateDefault = nullptr;
 
 		ID3D11RasterizerState* dxRasterizerStateF = nullptr;
 		ID3D11RasterizerState* dxRasterizerStateW = nullptr;
@@ -4684,6 +4685,14 @@ namespace olc
 				&depthStencilStateDesc, //descriptor of depth stencil
 				&dxDepthStencilState); //depth stencil state view to be outputed too
 
+			depthStencilStateDesc.DepthEnable = TRUE; // enable depth testing
+			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
+			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
+			depthStencilStateDesc.StencilEnable = FALSE;
+
+
+			dxDevice->CreateDepthStencilState(&depthStencilStateDesc, &dxDepthStencilStateDefault);
+
 			D3D11_RASTERIZER_DESC rasterizerDesc;
 			ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 
@@ -5012,7 +5021,7 @@ namespace olc
 			camTarget = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 
-			D3D11_BLEND_DESC blendVal;
+			D3D11_BLEND_DESC blendVal; // I am kinda confused since the layer does not blend on opengl... but it should, right? makes logical sense... so I will not make a work around unless told this functional effect is intentioanl
 			blendVal.AlphaToCoverageEnable = false;
 			blendVal.IndependentBlendEnable = false;
 			blendVal.RenderTarget[0].BlendEnable = true;
@@ -5068,6 +5077,7 @@ namespace olc
 #if defined(OLC_PLATFORM_WINAPI)
 			if (bSync) { dxSwapChain->Present(1, 0); } // Woooohooooooo!!!! SMOOOOOOOTH!
 			else { dxSwapChain->Present(0, 0); }
+
 #endif	
 
 #if defined(OLC_PLATFORM_X11)
@@ -5107,7 +5117,7 @@ namespace olc
 			{
 				//create blend state
 				D3D11_BLEND_DESC blendVal;
-
+				
 				switch (mode)
 				{
 				case olc::DecalMode::NORMAL:
@@ -5128,33 +5138,33 @@ namespace olc
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
 					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO;
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
-					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
 				case olc::DecalMode::MULTIPLICATIVE: //glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);	
-					blendVal.AlphaToCoverageEnable = false;
+					blendVal.AlphaToCoverageEnable = true;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_DEST_COLOR; //D3D11_BLEND_ZERO is default
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO; 
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_COLOR;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
-					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;//D3D11_BLEND_ONE
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
-				case olc::DecalMode::STENCIL:// glBlendFunc(GL_ZERO, GL_SRC_ALPHA); 
+				case olc::DecalMode::STENCIL:// glBlendFunc(GL_ZERO, GL_SRC_ALPHA);  - sets src blend adn then dest blend val
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO; //D3D11_BLEND_ZERO is default
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO;
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -5163,22 +5173,22 @@ namespace olc
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO; //D3D11_BLEND_ZERO is default
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_INV_SRC_ALPHA;
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
-				case olc::DecalMode::WIREFRAME: //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	
+				case olc::DecalMode::WIREFRAME: //glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA); <-	dx11 makes this based on triangle strip... 
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
-					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ZERO; //D3D11_BLEND_ZERO is default
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
+					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_INV_SRC_ALPHA; // D3D11_BLEND_ONE is default to pass all data
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; // D3D11_BLEND_ONE is default to pass all data
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -5260,7 +5270,7 @@ namespace olc
 				dxDepthStencilView); //setup array of stencil view - can be null
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			dxDeviceContext->OMSetBlendState(dxBlendStateDefault, bState, 0xffffffff); //FIX BLEND VALUES!!
-			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
+			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilStateDefault, 1); // bind stencil state after target?
 		}
 
 		void LayerIndexDraw() {
@@ -5274,7 +5284,7 @@ namespace olc
 		}
 		void LayerShaderUnset() {
 			ID3D11ShaderResourceView* unbind = nullptr;
-			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+			float bState[4] = { 0.0f, 0.0f, 0.0f, 0.0f };
 			dxDeviceContext->VSSetShader(nullptr, nullptr, 0);
 			dxDeviceContext->PSSetShader(nullptr, nullptr, 0);
 			dxDeviceContext->OMSetBlendState(NULL, bState, 0xffffffff); //may need a blend for layer... no idea!!
@@ -5428,15 +5438,16 @@ namespace olc
 
 
 
-			if (nDecalMode == DecalMode::WIREFRAME) {
+			if (nDecalMode == DecalMode::WIREFRAME) { //if someone wants I will force texture off... for now not
 				D3D11_MAPPED_SUBRESOURCE resource;
+
 				//dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
 				dxDeviceContext->Map(m_vbQuad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
 				memcpy(resource.pData, pVertexMem, sizeof(pVertexMem));
 				dxDeviceContext->Unmap(m_vbQuad, 0);
 				DecalLayoutVertexIndexStageSet();
 				DecalPixelStage(iterator);
-				DecalRastStage(1);
+				DecalRastStage(1); //not inheritally useful for a quad - more so a place holder
 				DecalOutputMergeStage();
 				DecalIndexDraw(decal);
 				//DecalShaderUnset();
@@ -5665,6 +5676,9 @@ namespace olc
 
 		void ClearBuffer(olc::Pixel p, bool bDepth) override
 		{
+
+			SetDecalMode(olc::DecalMode::NORMAL); //reset decal mode...
+
 			float ClearColor[4] = { float(p.r) / 255.0f, float(p.g) / 255.0f, float(p.b) / 255.0f, float(p.a) / 255.0f };
 			dxDeviceContext->ClearRenderTargetView(dxRenderTargetView, ClearColor);
 
