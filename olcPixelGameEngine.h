@@ -4127,7 +4127,7 @@ namespace olc
 // | START RENDERER: DX11 (dunno the feature set needed yet)  (muh Win32API)      |
 // O--------------------------------- ---------------------------------------------O
 
-#if defined(OLC_GFX_DIRECTX11) //TODO: if I can, find mem leaks and such
+#if defined(OLC_GFX_DIRECTX11)
 template<typename T>
 inline void SafeRelease(T& ptr)
 {
@@ -4144,7 +4144,7 @@ inline void SafeRelease(T& ptr)
 #include <DirectXMath.h>
 #include <DirectXColors.h>
 #include <atlbase.h> //safe release
-
+#include <dxgi1_2.h>
 //#if !defined(__MINGW32__)
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "d3d11.lib")
@@ -4156,9 +4156,6 @@ inline void SafeRelease(T& ptr)
 using namespace DirectX; //opperator overloads are in the name space...
 //#endif		
 typedef void __stdcall locSwapInterval_t(UINT n);
-typedef ID3D11Device* dxDevice_t;
-typedef ID3D11DeviceContext* dxDeviceContext_t;
-typedef IDXGISwapChain* dxSwapChain_t;
 
 #define CALLSTYLE __stdcall
 //#define OGL_LOAD(t, n) (t*)wglGetProcAddress(#n)
@@ -4194,9 +4191,9 @@ namespace olc
 		bool mFullScreen = false;
 #else
 #if !defined(OLC_PLATFORM_EMSCRIPTEN)
-		dxDevice_t dxDevice = 0;
-		dxDeviceContext_t dxDeviceContext = 0;
-		dxSwapChain_t dxSwapChain = 0;
+		ID3D11Device* dxDevice = 0;
+		ID3D11DeviceContext* dxDeviceContext = 0;
+		IDXGISwapChain1* dxSwapChain = 0;
 		ID3D11RenderTargetView* dxRenderTargetView = nullptr;
 		ID3D11Texture2D* dxDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* dxDepthStencilView = nullptr;
@@ -4210,6 +4207,13 @@ namespace olc
 		ID3D11BlendState* dxBlendStateDefault = nullptr;
 
 		D3D11_VIEWPORT dxViewport;
+
+		DXGI_SWAP_CHAIN_DESC1 swapChainDescW; //reuse for when recreating swap chain and parts to resize screen params
+		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainDescF;
+		
+		IDXGIFactory2* dxFactory;
+		IDXGIAdapter* dxAdapter;
+		IDXGIDevice* dxGIDevice;
 #endif
 #endif
 		int WinVersion = 6; //this is obtuse for verification of win version as a var... but I'ma still do it for my own sanity
@@ -4295,9 +4299,13 @@ namespace olc
 
 		olc::Renderable rendBlankQuad;
 
+	
+
 	public:
 
 		void UpdateCam() {
+
+
 
 			camRotationMatrix = XMMatrixRotationRollPitchYaw(camPitch, camYaw, 0);
 			camTarget = XMVector3TransformCoord(DefaultForward, camRotationMatrix);
@@ -4334,6 +4342,16 @@ namespace olc
 
 			dxWorldMatrix = XMMatrixRotationAxis(rotationAxis, 0);
 			dxDeviceContext->UpdateSubresource(dxConstantBuffers[CB_Object], 0, nullptr, &dxWorldMatrix, 0, 0);
+
+
+			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), dxViewport.Width / dxViewport.Height, 0.1f, 100.0f); //ratio is not too usful now
+			dxDeviceContext->UpdateSubresource(
+				dxConstantBuffers[CB_Application],
+				0,
+				nullptr,
+				&dxProjectionMatrix,
+				0,
+				0); //for window I need this to update ratio
 		}
 
 
@@ -4558,8 +4576,8 @@ namespace olc
 			}
 
 
-			DXGI_SWAP_CHAIN_DESC swapChainDesc;
-			ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
+			ZeroMemory(&swapChainDescW, sizeof(DXGI_SWAP_CHAIN_DESC1));
+			ZeroMemory(&swapChainDescF, sizeof(DXGI_SWAP_CHAIN_FULLSCREEN_DESC));
 
 			/*
 			poll the windows version your self, since rendering *can* change based on user end (doubt it) - but else you can just unga-bunga "#define"
@@ -4580,31 +4598,37 @@ namespace olc
 
 #if defined(OLC_GFX_DIRECTX11_FLIP_DISCARD)
 			WinVersion = 10;
-			swapChainDesc.BufferCount = 2; //if windows 10 use render flip 
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-#elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
-			WinVersion = 8;
-			swapChainDesc.BufferCount = 2; //if windows 7 8.1 use render flip - programmers job to decide how to implement this dynamically if they want it... since else you need win10 to program dx11 for OLC with version check API
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+			swapChainDescW.BufferCount = 2; //if windows 10 use render flip 
+			swapChainDescW.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+//#elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
 #else
-			WinVersion = 6; //assume XP since it does not matter
-			swapChainDesc.BufferCount = 1;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+			WinVersion = 8; //win 7 platform update - so win 7 <-- else window resizing will be broken... which sucks, and I felt like killing vista support is worth it - technically I kept the code to reimplment it 
+			swapChainDescW.BufferCount = 2; //if windows 7 8.1 use render flip - programmers job to decide how to implement this dynamically if they want it... since else you need win10 to program dx11 for OLC with version check API
+			swapChainDescW.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
+//#else
+//			WinVersion = 6; //windows vista
+//			swapChainDesc.BufferCount = 1;
+//			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 #endif
 
-			swapChainDesc.BufferDesc.Width = 640; 
-			swapChainDesc.BufferDesc.Height = 640; 
-			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
-			swapChainDesc.BufferDesc.RefreshRate = refreshRateStatic; 
-			swapChainDesc.Windowed = !bFullScreen; 
-			swapChainDesc.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
-			swapChainDesc.SampleDesc.Count = 1;
-			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
+			swapChainDescW.Width = 640; 
+			swapChainDescW.Height = 640; 
+			swapChainDescW.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+			//swapChainDescW.RefreshRate = refreshRateStatic; 
+			//swapChainDescW.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
+			swapChainDescW.SampleDesc.Count = 1;
+			swapChainDescW.SampleDesc.Quality = 0;
+			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
+			swapChainDescW.Scaling = DXGI_SCALING_STRETCH;
+			//swapChainDesc.BufferDesc.Scaling = DXGI_SCALING_STRETCH;
+			
+			swapChainDescF.Scaling = DXGI_MODE_SCALING_STRETCHED;
+			swapChainDescF.RefreshRate = refreshRateStatic;
+			swapChainDescF.Windowed = !bFullScreen;
 
 			//may need to set flag DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE to use GetDC( for render target output window... although HWND casting does work for now...
 
-			D3D11CreateDeviceAndSwapChain(  
+			D3D11CreateDevice(
 				nullptr, 
 				D3D_DRIVER_TYPE_HARDWARE, 
 				nullptr, 
@@ -4612,11 +4636,18 @@ namespace olc
 				featureLevels, 
 				_countof(featureLevels), 
 				D3D11_SDK_VERSION, 
-				&swapChainDesc, 
-				&dxSwapChain, 
 				&dxDevice,  
 				nullptr, 
 				&dxDeviceContext); 
+
+			dxDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxGIDevice); //works on windows phone  :P
+
+			dxGIDevice->GetAdapter(&dxAdapter);
+			
+			dxAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dxFactory);
+
+			dxFactory->CreateSwapChainForHwnd(dxDevice, (HWND)(params[0]), &swapChainDescW, &swapChainDescF, NULL, &dxSwapChain);
+
 			ID3D11Texture2D* backBuffer;
 			dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer); 
 
@@ -4625,6 +4656,8 @@ namespace olc
 				backBuffer, 
 				nullptr,  
 				&dxRenderTargetView); 
+
+			SafeRelease(backBuffer);
 
 			D3D11_TEXTURE2D_DESC depthStencilBufferDesc; 
 			ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC)); 
@@ -4950,10 +4983,6 @@ namespace olc
 
 			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuadLayer); 
 
-
-
-
-
 			D3D11_BUFFER_DESC constantBufferDesc;
 			ZeroMemory(&constantBufferDesc, sizeof(D3D11_BUFFER_DESC)); 
 
@@ -4966,14 +4995,15 @@ namespace olc
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Frame]); //make const buffer for frame
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Object]); //make const buffer for object 
 
-			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), /*clientWidth / clientHeight*/1, 0.1f, 100.0f);
+			/*
+			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), dxViewport.Width / dxViewport.Height, 0.1f, 100.0f); //ratio is not too usful now
 			dxDeviceContext->UpdateSubresource( 
 				dxConstantBuffers[CB_Application],  
 				0,  
 				nullptr, 
 				&dxProjectionMatrix,  
 				0, 
-				0);
+				0);*/
 
 			DefaultForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
 			DefaultRight = XMVectorSet(1.0f, 0.0f, 0.0f, 0.0f);
@@ -5009,7 +5039,7 @@ namespace olc
 		olc::rcode DestroyDevice() override
 		{
 #if defined(OLC_PLATFORM_WINAPI)
-					//TODO: delete active objects here!... not done yet
+			//TODO: find the other live objects later...
 			for (int i = 0; i < DecalTSV.size(); i++) {
 			
 				SafeRelease(DecalTSV[i]);
@@ -5265,7 +5295,7 @@ namespace olc
 				(5), 
 				0, 
 				0);
-
+			//TODO: make a instanced draw func for decals - decal + array of pos + array of color + other - much faster this way
 		}
 		void LayerShaderUnset() {
 			ID3D11ShaderResourceView* unbind = nullptr;
@@ -5669,11 +5699,112 @@ namespace olc
 		{
 #if defined(OLC_PLATFORM_GLUT)
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
-#else
+#else 
+//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
+//
+//	/*
+//			if (dxViewport.Width != size.x || dxViewport.Height != size.y || dxViewport.TopLeftY != pos.y || dxViewport.TopLeftX != pos.x) {
+//				float sizeX = size.x; //var was changing mid way;
+//				float sizeY = size.y;
+//				float posX = pos.x;
+//				float posY = pos.x;
+//
+//				dxViewport.Width = static_cast<float>(sizeX);
+//				dxViewport.Height = static_cast<float>(sizeY);
+//				dxViewport.TopLeftX = static_cast <float>(posX);
+//				dxViewport.TopLeftY = static_cast <float>(posY);
+//
+//				ID3D11RenderTargetView* tmpRendTarV= nullptr;
+//
+//				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
+//
+//				SafeRelease(dxDepthStencilBuffer);
+//				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+//				dxDepthStencilView->Release();
+//				dxDeviceContext->Flush();
+//
+//				
+//
+//				dxSwapChain->ResizeBuffers(0, sizeX, sizeY,
+//					swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+//
+//				ID3D11Texture2D* backBuffer;
+//
+//				dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+//
+//				dxDevice->CreateRenderTargetView(
+//					backBuffer,
+//					nullptr,
+//					&dxRenderTargetView);
+//
+//				SafeRelease(backBuffer);
+//
+//				dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
+//
+//
+//				D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+//				ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+//
+//				depthStencilBufferDesc.ArraySize = 1;
+//				depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+//				depthStencilBufferDesc.CPUAccessFlags = 0;
+//				depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+//				depthStencilBufferDesc.Width = sizeX;
+//				depthStencilBufferDesc.Height = sizeY;
+//				depthStencilBufferDesc.MipLevels = 1;
+//
+//				depthStencilBufferDesc.SampleDesc.Count = 1;
+//				depthStencilBufferDesc.SampleDesc.Quality = 0;
+//
+//				depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+//				
+//				dxDevice->CreateTexture2D(
+//					&depthStencilBufferDesc,
+//					nullptr,
+//					&dxDepthStencilBuffer);
+//
+//				dxDevice->CreateDepthStencilView(
+//					dxDepthStencilBuffer,
+//					nullptr,
+//					&dxDepthStencilView);
+//
+//				dxDeviceContext->RSSetViewports(1,&dxViewport);
+//
+//
+//			//	DXGI_MODE_DESC descModeTMP;
+//			//	descModeTMP.Width = sizeX;
+//			//	descModeTMP.Height = sizeY;
+//		//		descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
+//	//			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
+//
+//				//swapChainDesc
+////				dxSwapChain->ResizeTarget(&descModeTMP); 
+//
+//				// ratio is:
+//				/*
+//				dxViewport.Width-dxViewport.TopLeftX
+//				
+//				dxViewport.Height-dxViewport.TopLeftY
+//				*/
+//
+//				
+//				/*
+//				
+//				*/
+//			}
+			
 
+			/*
+			the following logic can be used to force stop window resizing
 
-			//	dxDeviceContext->ClearState(); //<-- meh, warnings that hurt perf are ignored TODO: fix this resize buffer thing as needed
-				//dxSwapChain->ResizeBuffers(1, size.x, size.y, DXGI_FORMAT_UNKNOWN, NULL); //TODO: see if I need to have full screen flag and need the GDI flag - for now doing well without get DC
+			DXGI_MODE_DESC descModeTMP;
+			descModeTMP.Width = WindowSizeX;
+			descModeTMP.Height = WindowSizeY;
+			descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
+			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
+
+			//swapChainDesc
+			dxSwapChain->ResizeTarget(&descModeTMP);*/
 
 				//glViewport(pos.x, pos.y, size.x, size.y); <-- add this but dx11
 #endif
