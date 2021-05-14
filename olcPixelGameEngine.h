@@ -4214,6 +4214,12 @@ namespace olc
 		IDXGIFactory2* dxFactory;
 		IDXGIAdapter* dxAdapter;
 		IDXGIDevice* dxGIDevice;
+
+		bool InitialSize = false;
+		float initialSizeX = 0;
+		float initialSizeY = 0;
+		
+
 #endif
 #endif
 		int WinVersion = 6; //this is obtuse for verification of win version as a var... but I'ma still do it for my own sanity
@@ -4619,7 +4625,7 @@ namespace olc
 			swapChainDescW.SampleDesc.Count = 1;
 			swapChainDescW.SampleDesc.Quality = 0;
 			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
-			swapChainDescW.Scaling = DXGI_SCALING_STRETCH;
+			swapChainDescW.Scaling = DXGI_SCALING_NONE;
 			//swapChainDesc.BufferDesc.Scaling = DXGI_SCALING_STRETCH;
 			
 			swapChainDescF.Scaling = DXGI_MODE_SCALING_STRETCHED;
@@ -5701,6 +5707,12 @@ namespace olc
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else 
 //			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
+			if (InitialSize == false) { //TODO:  LOOK AT NOT REAL TO DO; may be usless
+				InitialSize = true;
+				initialSizeX = size.x;
+				initialSizeY = size.y;
+			}
+
 //
 //	/*
 //			if (dxViewport.Width != size.x || dxViewport.Height != size.y || dxViewport.TopLeftY != pos.y || dxViewport.TopLeftX != pos.x) {
