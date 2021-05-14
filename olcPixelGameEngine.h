@@ -1848,7 +1848,7 @@ namespace olc
 
 	uint32_t PixelGameEngine::CreateLayer()
 	{
-		LayerDesc ld; //TODO ? : Work around create LAyer such that the create texture matches with layer - so make association var if needed?!? - I think this is no longer needed?
+		LayerDesc ld; 
 		ld.pDrawTarget = new olc::Sprite(vScreenSize.x, vScreenSize.y);
 		ld.nResID = renderer->CreateTexture(vScreenSize.x, vScreenSize.y);
 		renderer->UpdateTexture(ld.nResID, ld.pDrawTarget);
@@ -4127,7 +4127,7 @@ namespace olc
 // | START RENDERER: DX11 (dunno the feature set needed yet)  (muh Win32API)      |
 // O--------------------------------- ---------------------------------------------O
 
-#if defined(OLC_GFX_DIRECTX11) //TODO: MEMORY MANAGE AND CLEAN LEAKS ?
+#if defined(OLC_GFX_DIRECTX11) //TODO: if I can, find mem leaks and such
 template<typename T>
 inline void SafeRelease(T& ptr)
 {
@@ -4284,7 +4284,7 @@ namespace olc
 
 		struct locVertexF
 		{
-			float pos[3]; // TODO - see if I can make XMFLOAT 3 - same for rest
+			float pos[3]; // TODO? use XMFLOAT... although the usage is kinda not important in this senario
 			olc::vf2d tex; // XMFLOAT 2
 			float col[4]; // XMFlOAT 4
 		};
@@ -4596,7 +4596,7 @@ namespace olc
 			swapChainDesc.BufferDesc.Height = 640; 
 			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
 			swapChainDesc.BufferDesc.RefreshRate = refreshRateStatic; 
-			swapChainDesc.Windowed = true; //TODO: later make it bFullScreen
+			swapChainDesc.Windowed = !bFullScreen; 
 			swapChainDesc.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
 			swapChainDesc.SampleDesc.Count = 1;
 			swapChainDesc.SampleDesc.Quality = 0;
@@ -5010,6 +5010,43 @@ namespace olc
 		{
 #if defined(OLC_PLATFORM_WINAPI)
 					//TODO: delete active objects here!... not done yet
+			for (int i = 0; i < DecalTSV.size(); i++) {
+			
+				SafeRelease(DecalTSV[i]);
+				SafeRelease(DecalTSR[i]);
+				SafeRelease(DecalTUR[i]);
+				SafeRelease(DecalTUV[i]);
+				SafeRelease(DecalSamp[i]);
+
+			}
+
+			SafeRelease(m_PS);
+			SafeRelease(m_PSLayer);
+			SafeRelease(m_VS);
+			SafeRelease(m_Sample);
+			SafeRelease(m_UAVS);
+			SafeRelease(m_UAVLayer);
+			SafeRelease(m_vbQuad);
+			SafeRelease(m_vbLayer);
+			SafeRelease(m_viQuad);
+			SafeRelease(m_viQuadLayer);
+			SafeRelease(dxConstantBuffers[0]);
+			SafeRelease(dxConstantBuffers[1]);
+			SafeRelease(dxConstantBuffers[2]);
+			SafeRelease(dxBlendStateDefault);
+			SafeRelease(dxBlendState);
+			SafeRelease(dxRasterizerStateW);
+			SafeRelease(dxRasterizerStateF);
+			SafeRelease(dxDepthStencilStateDefault);
+			SafeRelease(dxDepthStencilState);
+			SafeRelease(dxDepthStencilView);
+			SafeRelease(dxDepthStencilBuffer);
+			SafeRelease(dxRenderTargetView);
+			SafeRelease(dxSwapChain);
+			SafeRelease(dxDeviceContext);
+			SafeRelease(dxDevice);
+
+
 #endif
 
 #if defined(OLC_PLATFORM_X11)
@@ -5241,7 +5278,7 @@ namespace olc
 
 		}
 
-		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override //TODO: make index buffer universal in usage to work - as comented on index buffer creation - also test layers
+		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override 
 		{
 			//			locBindBuffer(0x8892, m_vbQuad); //bind buffer array to opengl context
 
