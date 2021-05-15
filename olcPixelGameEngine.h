@@ -1848,7 +1848,7 @@ namespace olc
 
 	uint32_t PixelGameEngine::CreateLayer()
 	{
-		LayerDesc ld; 
+		LayerDesc ld;
 		ld.pDrawTarget = new olc::Sprite(vScreenSize.x, vScreenSize.y);
 		ld.nResID = renderer->CreateTexture(vScreenSize.x, vScreenSize.y);
 		renderer->UpdateTexture(ld.nResID, ld.pDrawTarget);
@@ -4210,7 +4210,7 @@ namespace olc
 
 		DXGI_SWAP_CHAIN_DESC1 swapChainDescW; //reuse for when recreating swap chain and parts to resize screen params
 		DXGI_SWAP_CHAIN_FULLSCREEN_DESC swapChainDescF;
-		
+
 		IDXGIFactory2* dxFactory;
 		IDXGIAdapter* dxAdapter;
 		IDXGIDevice* dxGIDevice;
@@ -4218,7 +4218,7 @@ namespace olc
 		bool InitialSize = false;
 		float initialSizeX = 0;
 		float initialSizeY = 0;
-		
+
 
 #endif
 #endif
@@ -4305,7 +4305,7 @@ namespace olc
 
 		olc::Renderable rendBlankQuad;
 
-	
+
 
 	public:
 
@@ -4367,7 +4367,7 @@ namespace olc
 		template<>
 		std::string GetLatestProfile<ID3D11VertexShader>()
 		{
-			
+
 			// Query the current feature level:
 			D3D_FEATURE_LEVEL featureLevel = dxDevice->GetFeatureLevel(); //get usable shader feature level - does not relate to Flip discad/sequence avaibility
 
@@ -4376,7 +4376,7 @@ namespace olc
 			case D3D_FEATURE_LEVEL_11_1:
 			case D3D_FEATURE_LEVEL_11_0:
 			{
-				return "vs_5_0"; 
+				return "vs_5_0";
 			}
 			break;
 			case D3D_FEATURE_LEVEL_10_1:
@@ -4457,7 +4457,7 @@ namespace olc
 
 			ID3D11VertexShader* pVertexShader = nullptr;
 			dxDevice->CreateVertexShader(pShaderBlob->GetBufferPointer(), pShaderBlob->GetBufferSize(), pClassLinkage, &pVertexShader); //make a shader based on buffer, buffer size, classtype, and return to pshader object
-			
+
 			D3D11_INPUT_ELEMENT_DESC dxVertexLayoutDesc[] =
 			{
 				{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -4551,7 +4551,7 @@ namespace olc
 		olc::rcode CreateDevice(std::vector<void*> params, bool bFullScreen, bool bVSYNC) override
 		{
 			bSync = bVSYNC;
-			
+
 #if defined(OLC_PLATFORM_WINAPI)
 
 			D3D_FEATURE_LEVEL featureLevels[] =
@@ -4574,7 +4574,7 @@ namespace olc
 			EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &WinMonitorInfo);
 
 			DXGI_RATIONAL refreshRateStatic;
-			refreshRateStatic.Numerator = WinMonitorInfo.dmDisplayFrequency; 
+			refreshRateStatic.Numerator = WinMonitorInfo.dmDisplayFrequency;
 			refreshRateStatic.Denominator = 1;
 
 			if (bVSYNC == false) {
@@ -4606,28 +4606,28 @@ namespace olc
 			WinVersion = 10;
 			swapChainDescW.BufferCount = 2; //if windows 10 use render flip 
 			swapChainDescW.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
-//#elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
+			//#elif defined(OLC_GFX_DIRECTX11_FLIP_SEQUENTIAL)
 #else
 			WinVersion = 8; //win 7 platform update - so win 7 <-- else window resizing will be broken... which sucks, and I felt like killing vista support is worth it - technically I kept the code to reimplment it 
 			swapChainDescW.BufferCount = 2; //if windows 7 8.1 use render flip - programmers job to decide how to implement this dynamically if they want it... since else you need win10 to program dx11 for OLC with version check API
 			swapChainDescW.SwapEffect = DXGI_SWAP_EFFECT_FLIP_SEQUENTIAL;
-//#else
-//			WinVersion = 6; //windows vista
-//			swapChainDesc.BufferCount = 1;
-//			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
+			//#else
+			//			WinVersion = 6; //windows vista
+			//			swapChainDesc.BufferCount = 1;
+			//			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_SEQUENTIAL;
 #endif
 
-			swapChainDescW.Width = 640; 
-			swapChainDescW.Height = 640; 
-			swapChainDescW.Format = DXGI_FORMAT_R8G8B8A8_UNORM; 
+			swapChainDescW.Width = 640;
+			swapChainDescW.Height = 640;
+			swapChainDescW.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			//swapChainDescW.RefreshRate = refreshRateStatic; 
 			//swapChainDescW.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
 			swapChainDescW.SampleDesc.Count = 1;
 			swapChainDescW.SampleDesc.Quality = 0;
-			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; 
+			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 			swapChainDescW.Scaling = DXGI_SCALING_NONE;
 			//swapChainDesc.BufferDesc.Scaling = DXGI_SCALING_STRETCH;
-			
+
 			swapChainDescF.Scaling = DXGI_MODE_SCALING_STRETCHED;
 			swapChainDescF.RefreshRate = refreshRateStatic;
 			swapChainDescF.Windowed = !bFullScreen;
@@ -4635,76 +4635,76 @@ namespace olc
 			//may need to set flag DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE to use GetDC( for render target output window... although HWND casting does work for now...
 
 			D3D11CreateDevice(
-				nullptr, 
-				D3D_DRIVER_TYPE_HARDWARE, 
-				nullptr, 
-				createDeviceFlags,  
-				featureLevels, 
-				_countof(featureLevels), 
-				D3D11_SDK_VERSION, 
-				&dxDevice,  
-				nullptr, 
-				&dxDeviceContext); 
+				nullptr,
+				D3D_DRIVER_TYPE_HARDWARE,
+				nullptr,
+				createDeviceFlags,
+				featureLevels,
+				_countof(featureLevels),
+				D3D11_SDK_VERSION,
+				&dxDevice,
+				nullptr,
+				&dxDeviceContext);
 
 			dxDevice->QueryInterface(__uuidof(IDXGIDevice), (void**)&dxGIDevice); //works on windows phone  :P
 
 			dxGIDevice->GetAdapter(&dxAdapter);
-			
+
 			dxAdapter->GetParent(__uuidof(IDXGIFactory2), (void**)&dxFactory);
 
 			dxFactory->CreateSwapChainForHwnd(dxDevice, (HWND)(params[0]), &swapChainDescW, &swapChainDescF, NULL, &dxSwapChain);
 
 			ID3D11Texture2D* backBuffer;
-			dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer); 
+			dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
 
 
 			dxDevice->CreateRenderTargetView(
-				backBuffer, 
-				nullptr,  
-				&dxRenderTargetView); 
+				backBuffer,
+				nullptr,
+				&dxRenderTargetView);
 
 			SafeRelease(backBuffer);
 
-			D3D11_TEXTURE2D_DESC depthStencilBufferDesc; 
-			ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC)); 
+			D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+			ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
 
-			depthStencilBufferDesc.ArraySize = 1; 
-			depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL; 
-			depthStencilBufferDesc.CPUAccessFlags = 0;  
-			depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; 
-			depthStencilBufferDesc.Width = 640; 
-			depthStencilBufferDesc.Height = 640; 
-			depthStencilBufferDesc.MipLevels = 1; 
+			depthStencilBufferDesc.ArraySize = 1;
+			depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			depthStencilBufferDesc.CPUAccessFlags = 0;
+			depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			depthStencilBufferDesc.Width = 640;
+			depthStencilBufferDesc.Height = 640;
+			depthStencilBufferDesc.MipLevels = 1;
 
 			depthStencilBufferDesc.SampleDesc.Count = 1;
 			depthStencilBufferDesc.SampleDesc.Quality = 0;
-			
+
 			depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-			dxDevice->CreateTexture2D( 
-				&depthStencilBufferDesc,  
-				nullptr,  
+			dxDevice->CreateTexture2D(
+				&depthStencilBufferDesc,
+				nullptr,
 				&dxDepthStencilBuffer);
 
-			dxDevice->CreateDepthStencilView( 
-				dxDepthStencilBuffer,  
-				nullptr, 
+			dxDevice->CreateDepthStencilView(
+				dxDepthStencilBuffer,
+				nullptr,
 				&dxDepthStencilView);
 
 			D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 			ZeroMemory(&depthStencilStateDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
 
-			depthStencilStateDesc.DepthEnable = TRUE; 
+			depthStencilStateDesc.DepthEnable = TRUE;
 			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; 
+			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 			depthStencilStateDesc.StencilEnable = FALSE;
-			dxDevice->CreateDepthStencilState( 
-				&depthStencilStateDesc, 
-				&dxDepthStencilState); 
+			dxDevice->CreateDepthStencilState(
+				&depthStencilStateDesc,
+				&dxDepthStencilState);
 
-			depthStencilStateDesc.DepthEnable = TRUE; 
+			depthStencilStateDesc.DepthEnable = TRUE;
 			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL; 
+			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
 			depthStencilStateDesc.StencilEnable = FALSE;
 
 
@@ -4713,26 +4713,26 @@ namespace olc
 			D3D11_RASTERIZER_DESC rasterizerDesc;
 			ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 
-			rasterizerDesc.AntialiasedLineEnable = FALSE; 
+			rasterizerDesc.AntialiasedLineEnable = FALSE;
 			rasterizerDesc.CullMode = D3D11_CULL_NONE;
 			rasterizerDesc.DepthBias = 0;
-			rasterizerDesc.DepthBiasClamp = 0.0f; 
-			rasterizerDesc.DepthClipEnable = TRUE; 
+			rasterizerDesc.DepthBiasClamp = 0.0f;
+			rasterizerDesc.DepthClipEnable = TRUE;
 			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-			rasterizerDesc.FrontCounterClockwise = FALSE; 
-			rasterizerDesc.MultisampleEnable = FALSE; 
-			rasterizerDesc.ScissorEnable = FALSE; 
+			rasterizerDesc.FrontCounterClockwise = FALSE;
+			rasterizerDesc.MultisampleEnable = FALSE;
+			rasterizerDesc.ScissorEnable = FALSE;
 			rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
-			dxDevice->CreateRasterizerState( 
-				&rasterizerDesc,  
-				&dxRasterizerStateF); 
+			dxDevice->CreateRasterizerState(
+				&rasterizerDesc,
+				&dxRasterizerStateF);
 
 			rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
 
-			dxDevice->CreateRasterizerState( 
-				&rasterizerDesc,  
-				&dxRasterizerStateW); 
+			dxDevice->CreateRasterizerState(
+				&rasterizerDesc,
+				&dxRasterizerStateW);
 
 			dxViewport.Width = static_cast<float>(640);
 			dxViewport.Height = static_cast<float>(640);
@@ -4824,13 +4824,13 @@ namespace olc
 				"float4 PositionWS : TEXCOORD1;};\n"
 				"float4 SimplePS(PixelShaderInput IN) : SV_TARGET{\n"
 				"float4 textureColor = shaderTexture.Sample(SampleType, IN.tex);\n"
-				"textureColor.r *= IN.color.r/255;\n" 
+				"textureColor.r *= IN.color.r/255;\n"
 				"textureColor.g *= IN.color.g/255;\n"
 				"textureColor.b *= IN.color.b/255;\n"
 				"textureColor.w *= IN.color.w/255;\n"
 				"return textureColor;}");
 
-			m_PS = LoadShader<ID3D11PixelShader>(&strFS, "SimplePS", "latest"); 
+			m_PS = LoadShader<ID3D11PixelShader>(&strFS, "SimplePS", "latest");
 
 			const std::string strFSL = std::string(
 #if defined(__arm__) || defined(OLC_PLATFORM_EMSCRIPTEN)
@@ -4897,58 +4897,58 @@ namespace olc
 			tmpSampleDesc.MaxLOD = D3D11_FLOAT32_MAX;
 			dxDevice->CreateSamplerState(&tmpSampleDesc, &m_Sample);
 
-			D3D11_BUFFER_DESC vertexBufferDesc; 
+			D3D11_BUFFER_DESC vertexBufferDesc;
 			ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
-			vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER; 
+			vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
 
-			vertexBufferDesc.ByteWidth = sizeof(pVertexMem); 
-			vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; 
+			vertexBufferDesc.ByteWidth = sizeof(pVertexMem);
+			vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-			vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC; 
+			vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 			vertexBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 
-			D3D11_SUBRESOURCE_DATA resourceData; 
+			D3D11_SUBRESOURCE_DATA resourceData;
 			ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
-			resourceData.pSysMem = &pVertexMem; 
+			resourceData.pSysMem = &pVertexMem;
 
-			dxDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &m_vbQuad); 
+			dxDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &m_vbQuad);
 
 
 			D3D11_UNORDERED_ACCESS_VIEW_DESC UAVdesc;
-		
+
 			UAVdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			UAVdesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			UAVdesc.Buffer.FirstElement = 0;
-			UAVdesc.Buffer.NumElements = sizeof(pVertexMem) / sizeof(locVertexF); 
+			UAVdesc.Buffer.NumElements = sizeof(pVertexMem) / sizeof(locVertexF);
 			UAVdesc.Buffer.Flags = 0;
 
-			locVertexF verts[4] = { 
+			locVertexF verts[4] = {
 			{ {-1.0f, -1.0f, 1.0}, { 0.0f, 1.0f}, {0,0,0,0}},
 			{ {+1.0f, -1.0f, 1.0}, {1.0f, 1.0f}, {0,0,0,0}},
 			{ {-1.0f, +1.0f, 1.0}, {0.0f, 0.0f}, {0,0,0,0}},
 			{ {+1.0f, +1.0f, 1.0}, {1.0f, 0.0f}, {0,0,0,0}},
 			};
-			
+
 			ZeroMemory(&vertexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
-			vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER; 
+			vertexBufferDesc.BindFlags = D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_VERTEX_BUFFER;
 
-			vertexBufferDesc.ByteWidth = sizeof(locVertexF) * 4; 
-			vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE; 
+			vertexBufferDesc.ByteWidth = sizeof(locVertexF) * 4;
+			vertexBufferDesc.CPUAccessFlags = D3D11_CPU_ACCESS_WRITE;
 
-			vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC; 
+			vertexBufferDesc.Usage = D3D11_USAGE_DYNAMIC;
 			vertexBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 
 			ZeroMemory(&resourceData, sizeof(D3D11_SUBRESOURCE_DATA));
 			resourceData.pSysMem = &verts;
 
-			dxDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &m_vbLayer); 
+			dxDevice->CreateBuffer(&vertexBufferDesc, &resourceData, &m_vbLayer);
 
 			UAVdesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 			UAVdesc.ViewDimension = D3D11_UAV_DIMENSION_BUFFER;
 			UAVdesc.Buffer.FirstElement = 0;
-			UAVdesc.Buffer.NumElements = sizeof(m_vbLayer) / sizeof(locVertexF); 
+			UAVdesc.Buffer.NumElements = sizeof(m_vbLayer) / sizeof(locVertexF);
 			UAVdesc.Buffer.Flags = 0;
 
 			UINT dxIndiceArr[OLC_MAX_VERTS];
@@ -4959,22 +4959,22 @@ namespace olc
 				dxIndiceArr[i + 3] = i + 2;
 			}
 
-			D3D11_BUFFER_DESC indexBufferDesc; 
-			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC)); 
+			D3D11_BUFFER_DESC indexBufferDesc;
+			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
-			indexBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER; 
+			indexBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER;
 			indexBufferDesc.ByteWidth = sizeof(UINT) * OLC_MAX_VERTS;
 			indexBufferDesc.CPUAccessFlags = 0;
 			indexBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 			indexBufferDesc.MiscFlags = D3D11_RESOURCE_MISC_BUFFER_ALLOW_RAW_VIEWS;
 
-			resourceData.pSysMem = &dxIndiceArr; 
+			resourceData.pSysMem = &dxIndiceArr;
 
-			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuad); 
+			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuad);
 
 
-			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC)); 
+			ZeroMemory(&indexBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
 			indexBufferDesc.BindFlags = D3D11_BIND_UNORDERED_ACCESS | D3D11_BIND_SHADER_RESOURCE | D3D11_BIND_INDEX_BUFFER;
 			indexBufferDesc.ByteWidth = sizeof(UINT) * 5;
@@ -4985,17 +4985,17 @@ namespace olc
 
 			UINT dxIndiceArrLayer[5] = { 0,1,2,3,0 };
 
-			resourceData.pSysMem = &dxIndiceArrLayer; 
+			resourceData.pSysMem = &dxIndiceArrLayer;
 
-			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuadLayer); 
+			dxDevice->CreateBuffer(&indexBufferDesc, &resourceData, &m_viQuadLayer);
 
 			D3D11_BUFFER_DESC constantBufferDesc;
-			ZeroMemory(&constantBufferDesc, sizeof(D3D11_BUFFER_DESC)); 
+			ZeroMemory(&constantBufferDesc, sizeof(D3D11_BUFFER_DESC));
 
 			constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-			constantBufferDesc.ByteWidth = sizeof(XMMATRIX); 
+			constantBufferDesc.ByteWidth = sizeof(XMMATRIX);
 			constantBufferDesc.CPUAccessFlags = 0;
-			constantBufferDesc.Usage = D3D11_USAGE_DEFAULT; 
+			constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Application]); //make const buffer for application
 			dxDevice->CreateBuffer(&constantBufferDesc, nullptr, &dxConstantBuffers[CB_Frame]); //make const buffer for frame
@@ -5003,12 +5003,12 @@ namespace olc
 
 			/*
 			dxProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), dxViewport.Width / dxViewport.Height, 0.1f, 100.0f); //ratio is not too usful now
-			dxDeviceContext->UpdateSubresource( 
-				dxConstantBuffers[CB_Application],  
-				0,  
-				nullptr, 
-				&dxProjectionMatrix,  
-				0, 
+			dxDeviceContext->UpdateSubresource(
+				dxConstantBuffers[CB_Application],
+				0,
+				nullptr,
+				&dxProjectionMatrix,
+				0,
 				0);*/
 
 			DefaultForward = XMVectorSet(0.0f, 0.0f, 1.0f, 0.0f);
@@ -5019,14 +5019,14 @@ namespace olc
 			camTarget = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 
 
-			D3D11_BLEND_DESC blendVal; 
+			D3D11_BLEND_DESC blendVal;
 			blendVal.AlphaToCoverageEnable = false;
 			blendVal.IndependentBlendEnable = false;
 			blendVal.RenderTarget[0].BlendEnable = true;
 			blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 			blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 			blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-			blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; 
+			blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 			blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 			blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 			blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -5047,7 +5047,7 @@ namespace olc
 #if defined(OLC_PLATFORM_WINAPI)
 			//TODO: find the other live objects later...
 			for (int i = 0; i < DecalTSV.size(); i++) {
-			
+
 				SafeRelease(DecalTSV[i]);
 				SafeRelease(DecalTSR[i]);
 				SafeRelease(DecalTUR[i]);
@@ -5136,12 +5136,12 @@ namespace olc
 
 		}
 
-		void SetDecalMode(const olc::DecalMode& mode) override 
+		void SetDecalMode(const olc::DecalMode& mode) override
 		{
 			if (mode != nDecalMode)
 			{
 				D3D11_BLEND_DESC blendVal;
-				
+
 				switch (mode)
 				{
 				case olc::DecalMode::NORMAL:
@@ -5151,31 +5151,31 @@ namespace olc
 					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; 
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
-				case olc::DecalMode::ADDITIVE: 
+				case olc::DecalMode::ADDITIVE:
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
 					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; 
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
-				case olc::DecalMode::MULTIPLICATIVE: 
+				case olc::DecalMode::MULTIPLICATIVE:
 					blendVal.AlphaToCoverageEnable = true;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
-					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO; 
+					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_SRC_COLOR;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; 
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -5204,14 +5204,14 @@ namespace olc
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
 					break;
-				case olc::DecalMode::WIREFRAME: 
+				case olc::DecalMode::WIREFRAME:
 					blendVal.AlphaToCoverageEnable = false;
 					blendVal.IndependentBlendEnable = false;
 					blendVal.RenderTarget[0].BlendEnable = true;
 					blendVal.RenderTarget[0].SrcBlend = D3D11_BLEND_SRC_ALPHA;
 					blendVal.RenderTarget[0].DestBlend = D3D11_BLEND_INV_SRC_ALPHA;
 					blendVal.RenderTarget[0].BlendOp = D3D11_BLEND_OP_ADD;
-					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE; 
+					blendVal.RenderTarget[0].SrcBlendAlpha = D3D11_BLEND_ONE;
 					blendVal.RenderTarget[0].DestBlendAlpha = D3D11_BLEND_ZERO;
 					blendVal.RenderTarget[0].BlendOpAlpha = D3D11_BLEND_OP_ADD;
 					blendVal.RenderTarget[0].RenderTargetWriteMask = D3D11_COLOR_WRITE_ENABLE_ALL;
@@ -5227,79 +5227,79 @@ namespace olc
 		void LayerLayoutVertexIndexStageSet() {
 
 			const UINT vertexStride = sizeof(locVertexF);
-			const UINT offset = 0; 
-			
+			const UINT offset = 0;
+
 			dxDeviceContext->IASetVertexBuffers(0, 1, &m_vbLayer, &vertexStride, &offset);
 
 			dxDeviceContext->IASetInputLayout(
 				dxInputLayout);
 
 			dxDeviceContext->IASetIndexBuffer(
-				m_viQuadLayer, 
-				DXGI_FORMAT_R32_UINT, 
-				0); 
+				m_viQuadLayer,
+				DXGI_FORMAT_R32_UINT,
+				0);
 
 			dxDeviceContext->IASetPrimitiveTopology(
 				D3D11_PRIMITIVE_TOPOLOGY_TRIANGLESTRIP);
 
-			dxDeviceContext->VSSetConstantBuffers( 
-				0, 
-				3, 
+			dxDeviceContext->VSSetConstantBuffers(
+				0,
+				3,
 				dxConstantBuffers
 			);
 
 			dxDeviceContext->VSSetShader(
-				m_VS, 
-				nullptr, 
-				0); 
+				m_VS,
+				nullptr,
+				0);
 
 		}
 
 		void LayerPixelStage() {
 
 			ID3D11ShaderResourceView* empty = nullptr;
-			dxDeviceContext->PSSetShader( 
-				m_PS,  
-				nullptr, 
-				0); 
+			dxDeviceContext->PSSetShader(
+				m_PS,
+				nullptr,
+				0);
 
 			dxDeviceContext->PSSetShaderResources(0, 1, &DecalTSV[2]); //2 is back buffer tex
 
-			dxDeviceContext->PSSetSamplers(0, 1, &DecalSamp[2]); 
+			dxDeviceContext->PSSetSamplers(0, 1, &DecalSamp[2]);
 
-			dxDeviceContext->PSSetConstantBuffers( 
-				0,  
-				3, 
-				dxConstantBuffers); 
+			dxDeviceContext->PSSetConstantBuffers(
+				0,
+				3,
+				dxConstantBuffers);
 
 		}
 
 		void LayerRastStage() {
 
-			dxDeviceContext->RSSetState(dxRasterizerStateF); 
-			dxDeviceContext->RSSetViewports( 
-				1, 
-				&dxViewport); 
+			dxDeviceContext->RSSetState(dxRasterizerStateF);
+			dxDeviceContext->RSSetViewports(
+				1,
+				&dxViewport);
 
 		}
 
 		void LayerOutputMergeStage() {
 
-			dxDeviceContext->OMSetRenderTargets( 
-				1, 
-				&dxRenderTargetView, 
-				dxDepthStencilView); 
+			dxDeviceContext->OMSetRenderTargets(
+				1,
+				&dxRenderTargetView,
+				dxDepthStencilView);
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
-			dxDeviceContext->OMSetBlendState(dxBlendStateDefault, bState, 0xffffffff); 
-			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilStateDefault, 1); 
+			dxDeviceContext->OMSetBlendState(dxBlendStateDefault, bState, 0xffffffff);
+			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilStateDefault, 1);
 
 		}
 
 		void LayerIndexDraw() {
 
 			dxDeviceContext->DrawIndexed( //TODO: make the layer 4 indices... but its really not important - it could be less than a ns of time saved
-				(5), 
-				0, 
+				(5),
+				0,
 				0);
 			//TODO: make a instanced draw func for decals - decal + array of pos + array of color + other - much faster this way
 		}
@@ -5314,7 +5314,7 @@ namespace olc
 
 		}
 
-		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override 
+		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override
 		{
 			//			locBindBuffer(0x8892, m_vbQuad); //bind buffer array to opengl context
 
@@ -5363,11 +5363,11 @@ namespace olc
 				nullptr, //array of class instance - can be disabled
 				0); //num of class instance above
 
-			dxDeviceContext->VSSetConstantBuffers( // bind constant buffer with matrix data to Vertex shader stage
-				0, // index of const buffer    --> // D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT – 1
-				3, //number of buffers - obejct, frame, and application buffers are 3
-				dxConstantBuffers
-			);
+//			dxDeviceContext->VSSetConstantBuffers( // bind constant buffer with matrix data to Vertex shader stage <--no need to rebind
+//				0, // index of const buffer    --> // D3D11_COMMONSHADER_CONSTANT_BUFFER_API_SLOT_COUNT – 1
+//				3, //number of buffers - obejct, frame, and application buffers are 3
+//				dxConstantBuffers
+//			);
 
 		}
 
@@ -5378,10 +5378,10 @@ namespace olc
 				nullptr, //array of class instance - can be disabled
 				0); //number of instance
 
-			dxDeviceContext->PSSetConstantBuffers( //pixel state to bind to shader state
-				0,  // pointer to shader to bind
-				3, //array of class instance - can be disabled
-				dxConstantBuffers); //number of instance
+//			dxDeviceContext->PSSetConstantBuffers( //pixel state to bind to shader state <--no need to rebind
+//				0,  // pointer to shader to bind
+//				3, //array of class instance - can be disabled
+//				dxConstantBuffers); //number of instance
 
 			dxDeviceContext->PSSetShaderResources(0, 1, &DecalTSV[id]); //no texture...
 
@@ -5392,27 +5392,27 @@ namespace olc
 		void DecalRastStage(int flag) {
 
 			if (flag == 0) {
-				dxDeviceContext->RSSetState(dxRasterizerStateF); //set rasterizer state from deviceContext - InitDirectX 
-				dxDeviceContext->RSSetViewports( //set viewPort state from deviceContext 
-					1, //view port count 
-					&dxViewport); //view port struct made previously
+				dxDeviceContext->RSSetState(dxRasterizerStateF); //set rasterizer state from deviceContext - InitDirectX  -- inefficent to bind unnesisary things but I need to reset wireframe if so
+//				dxDeviceContext->RSSetViewports( //set viewPort state from deviceContext 
+//					1, //view port count 
+//					&dxViewport); //view port struct made previously
 			}
 			else if (flag == 1) {
-				dxDeviceContext->RSSetState(dxRasterizerStateW); //set rasterizer state from deviceContext - InitDirectX 
-				dxDeviceContext->RSSetViewports( //set viewPort state from deviceContext 
-					1, //view port count 
-					&dxViewport); //view port struct made previously
+				dxDeviceContext->RSSetState(dxRasterizerStateW); //set rasterizer state from deviceContext - InitDirectX  -- inefficent to bind unnesisary things
+//				dxDeviceContext->RSSetViewports( //set viewPort state from deviceContext 
+//					1, //view port count 
+//					&dxViewport); //view port struct made previously
 			}
 		}
 
 		void DecalOutputMergeStage() {
-			dxDeviceContext->OMSetRenderTargets( //8 is max currently
-				1, //1 render target 
-				&dxRenderTargetView, //setup array of render view  - can be null
-				dxDepthStencilView); //setup array of stencil view - can be null
+//			dxDeviceContext->OMSetRenderTargets( //usless to rebind - waists some ms of cpu time as nsight said - same applies to other things
+//				1, //1 render target 
+//				&dxRenderTargetView, //setup array of render view  - can be null
+//				dxDepthStencilView); //setup array of stencil view - can be null
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			dxDeviceContext->OMSetBlendState(dxBlendState, bState, 0xffffffff); //FIX BLEND VALUES!!
-			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
+//			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
 		}
 
 		void DecalIndexDraw(const olc::DecalInstance& decal) {
@@ -5694,7 +5694,7 @@ namespace olc
 		void ClearBuffer(olc::Pixel p, bool bDepth) override
 		{
 
-			
+
 			float ClearColor[4] = { float(p.r) / 255.0f, float(p.g) / 255.0f, float(p.b) / 255.0f, float(p.a) / 255.0f };
 			dxDeviceContext->ClearRenderTargetView(dxRenderTargetView, ClearColor);
 
@@ -5706,119 +5706,119 @@ namespace olc
 #if defined(OLC_PLATFORM_GLUT)
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else 
-//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
+			//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
 			if (InitialSize == false) { //TODO:  LOOK AT NOT REAL TO DO; may be usless
 				InitialSize = true;
 				initialSizeX = size.x;
 				initialSizeY = size.y;
 			}
 
-//
-//	/*
-//			if (dxViewport.Width != size.x || dxViewport.Height != size.y || dxViewport.TopLeftY != pos.y || dxViewport.TopLeftX != pos.x) {
-//				float sizeX = size.x; //var was changing mid way;
-//				float sizeY = size.y;
-//				float posX = pos.x;
-//				float posY = pos.x;
-//
-//				dxViewport.Width = static_cast<float>(sizeX);
-//				dxViewport.Height = static_cast<float>(sizeY);
-//				dxViewport.TopLeftX = static_cast <float>(posX);
-//				dxViewport.TopLeftY = static_cast <float>(posY);
-//
-//				ID3D11RenderTargetView* tmpRendTarV= nullptr;
-//
-//				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
-//
-//				SafeRelease(dxDepthStencilBuffer);
-//				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
-//				dxDepthStencilView->Release();
-//				dxDeviceContext->Flush();
-//
-//				
-//
-//				dxSwapChain->ResizeBuffers(0, sizeX, sizeY,
-//					swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-//
-//				ID3D11Texture2D* backBuffer;
-//
-//				dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
-//
-//				dxDevice->CreateRenderTargetView(
-//					backBuffer,
-//					nullptr,
-//					&dxRenderTargetView);
-//
-//				SafeRelease(backBuffer);
-//
-//				dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
-//
-//
-//				D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-//				ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
-//
-//				depthStencilBufferDesc.ArraySize = 1;
-//				depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-//				depthStencilBufferDesc.CPUAccessFlags = 0;
-//				depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-//				depthStencilBufferDesc.Width = sizeX;
-//				depthStencilBufferDesc.Height = sizeY;
-//				depthStencilBufferDesc.MipLevels = 1;
-//
-//				depthStencilBufferDesc.SampleDesc.Count = 1;
-//				depthStencilBufferDesc.SampleDesc.Quality = 0;
-//
-//				depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-//				
-//				dxDevice->CreateTexture2D(
-//					&depthStencilBufferDesc,
-//					nullptr,
-//					&dxDepthStencilBuffer);
-//
-//				dxDevice->CreateDepthStencilView(
-//					dxDepthStencilBuffer,
-//					nullptr,
-//					&dxDepthStencilView);
-//
-//				dxDeviceContext->RSSetViewports(1,&dxViewport);
-//
-//
-//			//	DXGI_MODE_DESC descModeTMP;
-//			//	descModeTMP.Width = sizeX;
-//			//	descModeTMP.Height = sizeY;
-//		//		descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
-//	//			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
-//
-//				//swapChainDesc
-////				dxSwapChain->ResizeTarget(&descModeTMP); 
-//
-//				// ratio is:
-//				/*
-//				dxViewport.Width-dxViewport.TopLeftX
-//				
-//				dxViewport.Height-dxViewport.TopLeftY
-//				*/
-//
-//				
-//				/*
-//				
-//				*/
-//			}
-			
+			//
+			//	/*
+			//			if (dxViewport.Width != size.x || dxViewport.Height != size.y || dxViewport.TopLeftY != pos.y || dxViewport.TopLeftX != pos.x) {
+			//				float sizeX = size.x; //var was changing mid way;
+			//				float sizeY = size.y;
+			//				float posX = pos.x;
+			//				float posY = pos.x;
+			//
+			//				dxViewport.Width = static_cast<float>(sizeX);
+			//				dxViewport.Height = static_cast<float>(sizeY);
+			//				dxViewport.TopLeftX = static_cast <float>(posX);
+			//				dxViewport.TopLeftY = static_cast <float>(posY);
+			//
+			//				ID3D11RenderTargetView* tmpRendTarV= nullptr;
+			//
+			//				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
+			//
+			//				SafeRelease(dxDepthStencilBuffer);
+			//				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+			//				dxDepthStencilView->Release();
+			//				dxDeviceContext->Flush();
+			//
+			//				
+			//
+			//				dxSwapChain->ResizeBuffers(0, sizeX, sizeY,
+			//					swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
+			//
+			//				ID3D11Texture2D* backBuffer;
+			//
+			//				dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+			//
+			//				dxDevice->CreateRenderTargetView(
+			//					backBuffer,
+			//					nullptr,
+			//					&dxRenderTargetView);
+			//
+			//				SafeRelease(backBuffer);
+			//
+			//				dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
+			//
+			//
+			//				D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+			//				ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+			//
+			//				depthStencilBufferDesc.ArraySize = 1;
+			//				depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+			//				depthStencilBufferDesc.CPUAccessFlags = 0;
+			//				depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+			//				depthStencilBufferDesc.Width = sizeX;
+			//				depthStencilBufferDesc.Height = sizeY;
+			//				depthStencilBufferDesc.MipLevels = 1;
+			//
+			//				depthStencilBufferDesc.SampleDesc.Count = 1;
+			//				depthStencilBufferDesc.SampleDesc.Quality = 0;
+			//
+			//				depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+			//				
+			//				dxDevice->CreateTexture2D(
+			//					&depthStencilBufferDesc,
+			//					nullptr,
+			//					&dxDepthStencilBuffer);
+			//
+			//				dxDevice->CreateDepthStencilView(
+			//					dxDepthStencilBuffer,
+			//					nullptr,
+			//					&dxDepthStencilView);
+			//
+			//				dxDeviceContext->RSSetViewports(1,&dxViewport);
+			//
+			//
+			//			//	DXGI_MODE_DESC descModeTMP;
+			//			//	descModeTMP.Width = sizeX;
+			//			//	descModeTMP.Height = sizeY;
+			//		//		descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
+			//	//			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
+			//
+			//				//swapChainDesc
+			////				dxSwapChain->ResizeTarget(&descModeTMP); 
+			//
+			//				// ratio is:
+			//				/*
+			//				dxViewport.Width-dxViewport.TopLeftX
+			//				
+			//				dxViewport.Height-dxViewport.TopLeftY
+			//				*/
+			//
+			//				
+			//				/*
+			//				
+			//				*/
+			//			}
 
-			/*
-			the following logic can be used to force stop window resizing
 
-			DXGI_MODE_DESC descModeTMP;
-			descModeTMP.Width = WindowSizeX;
-			descModeTMP.Height = WindowSizeY;
-			descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
-			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
+						/*
+						the following logic can be used to force stop window resizing
 
-			//swapChainDesc
-			dxSwapChain->ResizeTarget(&descModeTMP);*/
+						DXGI_MODE_DESC descModeTMP;
+						descModeTMP.Width = WindowSizeX;
+						descModeTMP.Height = WindowSizeY;
+						descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
+						descModeTMP.Format = swapChainDesc.BufferDesc.Format;
 
-				//glViewport(pos.x, pos.y, size.x, size.y); <-- add this but dx11
+						//swapChainDesc
+						dxSwapChain->ResizeTarget(&descModeTMP);*/
+
+						//glViewport(pos.x, pos.y, size.x, size.y); <-- add this but dx11
 #endif
 		}
 	};
