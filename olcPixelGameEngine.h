@@ -5613,7 +5613,8 @@ namespace olc
 
 		void UpdateViewport(const olc::vi2d& pos, const olc::vi2d& size) override
 		{
-			//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
+			//thank you for finding bugs and testing the window resize code @Frosty!
+			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
 			if (InitialSize == false) {
 				InitialSize = true;
 				initialSizeX = size.x;
@@ -5627,10 +5628,10 @@ namespace olc
 				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
 
 				SafeRelease(dxDepthStencilBuffer);
-				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+				dxRenderTargetView->Release(); 
 				dxDepthStencilView->Release();
 				dxDeviceContext->Flush();
-				//resize buffers
+				
 				dxSwapChain->ResizeBuffers(0, initialSizeX, initialSizeY,
 					swapChainDescW.Format, swapChainDescW.Flags);
 
@@ -5704,10 +5705,10 @@ namespace olc
 					dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
 
 					SafeRelease(dxDepthStencilBuffer);
-					dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+					dxRenderTargetView->Release();
 					dxDepthStencilView->Release();
 					dxDeviceContext->Flush();
-					//resize buffers
+					
 					dxSwapChain->ResizeBuffers(0, size.x + pos.x, size.y + pos.y,
 						swapChainDescW.Format, swapChainDescW.Flags);
 
@@ -5752,7 +5753,6 @@ namespace olc
 						&dxDepthStencilView);
 
 					dxDeviceContext->RSSetViewports(1, &dxViewport);
-
 
 					//TODO: clear background when resize looks like a driver issue.. so not really a todo
 					//to fix you need to move around the window after resized... *sigh* <-- I tried debugging this for a few hours and this is all that I came up with
