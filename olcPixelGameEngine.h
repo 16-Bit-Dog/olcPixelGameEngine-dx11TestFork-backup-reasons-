@@ -4625,12 +4625,12 @@ namespace olc
 			swapChainDescW.SampleDesc.Count = 1;
 			swapChainDescW.SampleDesc.Quality = 0;
 			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDescW.Scaling = DXGI_SCALING_NONE;
+			swapChainDescW.Scaling = DXGI_SCALING_STRETCH;
 			//swapChainDesc.BufferDesc.Scaling = DXGI_SCALING_STRETCH;
 
 			swapChainDescF.Scaling = DXGI_MODE_SCALING_STRETCHED;
 			swapChainDescF.RefreshRate = refreshRateStatic;
-			swapChainDescF.Windowed = !bFullScreen;
+			swapChainDescF.Windowed = !bFullScreen; //a function to switch to full screen exists with dx11!
 
 			//may need to set flag DXGI_SWAP_CHAIN_FLAG_GDI_COMPATIBLE to use GetDC( for render target output window... although HWND casting does work for now...
 
@@ -5406,10 +5406,10 @@ namespace olc
 		}
 
 		void DecalOutputMergeStage() {
-//			dxDeviceContext->OMSetRenderTargets( //usless to rebind - waists some ms of cpu time as nsight said - same applies to other things
-//				1, //1 render target 
-//				&dxRenderTargetView, //setup array of render view  - can be null
-//				dxDepthStencilView); //setup array of stencil view - can be null
+			//			dxDeviceContext->OMSetRenderTargets( //usless to rebind - waists some ms of cpu time as nsight said - same applies to other things
+			//				1, //1 render target 
+			//				&dxRenderTargetView, //setup array of render view  - can be null
+			//				dxDepthStencilView); //setup array of stencil view - can be null
 			float bState[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 			dxDeviceContext->OMSetBlendState(dxBlendState, bState, 0xffffffff); //FIX BLEND VALUES!!
 //			dxDeviceContext->OMSetDepthStencilState(dxDepthStencilState, 1); // bind stencil state after target?
@@ -5707,118 +5707,85 @@ namespace olc
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else 
 			//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
-			if (InitialSize == false) { //TODO:  LOOK AT NOT REAL TO DO; may be usless
+			if (InitialSize == false ) { //TODO:  LOOK AT NOT REAL TO DO; may be usless
 				InitialSize = true;
 				initialSizeX = size.x;
 				initialSizeY = size.y;
+
+				dxViewport.Width = initialSizeX;
+				dxViewport.Height = initialSizeY;
+
+				ID3D11RenderTargetView* tmpRendTarV = nullptr;
+				
+				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
+
+				SafeRelease(dxDepthStencilBuffer);
+				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+				dxDepthStencilView->Release();
+				dxDeviceContext->Flush();
+				//resize buffers
+				dxSwapChain->ResizeBuffers(0, initialSizeX, initialSizeY,
+					swapChainDescW.Format, swapChainDescW.Flags);
+
+				ID3D11Texture2D* backBuffer;
+
+				dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+
+				dxDevice->CreateRenderTargetView(
+					backBuffer,
+					nullptr,
+					&dxRenderTargetView);
+
+				SafeRelease(backBuffer);
+
+				dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
+
+
+				D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+				ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+				depthStencilBufferDesc.ArraySize = 1;
+				depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+				depthStencilBufferDesc.CPUAccessFlags = 0;
+				depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+				depthStencilBufferDesc.Width = initialSizeX;
+				depthStencilBufferDesc.Height = initialSizeY;
+				depthStencilBufferDesc.MipLevels = 1;
+
+				depthStencilBufferDesc.SampleDesc.Count = 1;
+				depthStencilBufferDesc.SampleDesc.Quality = 0;
+
+				depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+				dxDevice->CreateTexture2D(
+					&depthStencilBufferDesc,
+					nullptr,
+					&dxDepthStencilBuffer);
+
+				dxDevice->CreateDepthStencilView(
+					dxDepthStencilBuffer,
+					nullptr,
+					&dxDepthStencilView);
+
+				dxDeviceContext->RSSetViewports(1, &dxViewport);
+
 			}
 
-			//
-			//	/*
-			//			if (dxViewport.Width != size.x || dxViewport.Height != size.y || dxViewport.TopLeftY != pos.y || dxViewport.TopLeftX != pos.x) {
-			//				float sizeX = size.x; //var was changing mid way;
-			//				float sizeY = size.y;
-			//				float posX = pos.x;
-			//				float posY = pos.x;
-			//
-			//				dxViewport.Width = static_cast<float>(sizeX);
-			//				dxViewport.Height = static_cast<float>(sizeY);
-			//				dxViewport.TopLeftX = static_cast <float>(posX);
-			//				dxViewport.TopLeftY = static_cast <float>(posY);
-			//
-			//				ID3D11RenderTargetView* tmpRendTarV= nullptr;
-			//
-			//				dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
-			//
-			//				SafeRelease(dxDepthStencilBuffer);
-			//				dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
-			//				dxDepthStencilView->Release();
-			//				dxDeviceContext->Flush();
-			//
-			//				
-			//
-			//				dxSwapChain->ResizeBuffers(0, sizeX, sizeY,
-			//					swapChainDesc.BufferDesc.Format, swapChainDesc.Flags);
-			//
-			//				ID3D11Texture2D* backBuffer;
-			//
-			//				dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
-			//
-			//				dxDevice->CreateRenderTargetView(
-			//					backBuffer,
-			//					nullptr,
-			//					&dxRenderTargetView);
-			//
-			//				SafeRelease(backBuffer);
-			//
-			//				dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
-			//
-			//
-			//				D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
-			//				ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
-			//
-			//				depthStencilBufferDesc.ArraySize = 1;
-			//				depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
-			//				depthStencilBufferDesc.CPUAccessFlags = 0;
-			//				depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
-			//				depthStencilBufferDesc.Width = sizeX;
-			//				depthStencilBufferDesc.Height = sizeY;
-			//				depthStencilBufferDesc.MipLevels = 1;
-			//
-			//				depthStencilBufferDesc.SampleDesc.Count = 1;
-			//				depthStencilBufferDesc.SampleDesc.Quality = 0;
-			//
-			//				depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-			//				
-			//				dxDevice->CreateTexture2D(
-			//					&depthStencilBufferDesc,
-			//					nullptr,
-			//					&dxDepthStencilBuffer);
-			//
-			//				dxDevice->CreateDepthStencilView(
-			//					dxDepthStencilBuffer,
-			//					nullptr,
-			//					&dxDepthStencilView);
-			//
-			//				dxDeviceContext->RSSetViewports(1,&dxViewport);
-			//
-			//
-			//			//	DXGI_MODE_DESC descModeTMP;
-			//			//	descModeTMP.Width = sizeX;
-			//			//	descModeTMP.Height = sizeY;
-			//		//		descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
-			//	//			descModeTMP.Format = swapChainDesc.BufferDesc.Format;
-			//
-			//				//swapChainDesc
-			////				dxSwapChain->ResizeTarget(&descModeTMP); 
-			//
-			//				// ratio is:
-			//				/*
-			//				dxViewport.Width-dxViewport.TopLeftX
-			//				
-			//				dxViewport.Height-dxViewport.TopLeftY
-			//				*/
-			//
-			//				
-			//				/*
-			//				
-			//				*/
-			//			}
+			else {
 
 
-						/*
-						the following logic can be used to force stop window resizing
+				if (pos.x > 0 || pos.y > 0) {//to stop window resizing: mouse positon is not working nicly with dx11
+					DXGI_MODE_DESC descModeTMP;
+					descModeTMP.Width = initialSizeX;
+					descModeTMP.Height = initialSizeY;
+					descModeTMP.RefreshRate = swapChainDescF.RefreshRate;
+					descModeTMP.Format = swapChainDescW.Format;
 
-						DXGI_MODE_DESC descModeTMP;
-						descModeTMP.Width = WindowSizeX;
-						descModeTMP.Height = WindowSizeY;
-						descModeTMP.RefreshRate = swapChainDesc.BufferDesc.RefreshRate;
-						descModeTMP.Format = swapChainDesc.BufferDesc.Format;
+					dxSwapChain->ResizeTarget(&descModeTMP);
+				}
 
-						//swapChainDesc
-						dxSwapChain->ResizeTarget(&descModeTMP);*/
+			}
 
-						//glViewport(pos.x, pos.y, size.x, size.y); <-- add this but dx11
 #endif
 		}
 	};
@@ -7422,4 +7389,3 @@ namespace olc
 // O------------------------------------------------------------------------------O
 // | END OF OLC_PGE_APPLICATION                                                   |
 // O------------------------------------------------------------------------------O
-
