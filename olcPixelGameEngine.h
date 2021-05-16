@@ -4123,7 +4123,6 @@ namespace olc
 
 
 #pragma region renderer_directx11
-<<<<<<< HEAD
 // O-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------O
 // | START RENDERER: DX11 (worst comes to worst a software renderer exists which can be a toggled option... min is windows 7 plat update) - "Never enough Win Api" - 16_Bit_Dog        |
 // O--------------------------------- ---------------------------------------------------------------------------------------------------------------------------------------------------O
@@ -4139,32 +4138,18 @@ inline void SafeRelease(T& ptr)
 	}
 }
 
-=======
-// O------------------------------------------------------------------------------O
-// | START RENDERER: DX11 (dunno the feature set needed yet)  (muh Win32API)      |
-// O------------------------------------------------------------------------------O
-
-#if defined(OLC_GFX_DIRECTX11)
-
-#if defined(OLC_PLATFORM_WINAPI)
->>>>>>> 10b0cab... fully broken addition of some basics
 #include <dwmapi.h>
 #include <d3d11.h>
 #include <d3dcompiler.h>
 #include <DirectXMath.h>
 #include <DirectXColors.h>
-<<<<<<< HEAD
 #include <atlbase.h> //safe release
 #include <dxgi1_2.h>
-=======
-//#if !defined(__MINGW32__)
->>>>>>> 10b0cab... fully broken addition of some basics
 #pragma comment(lib, "Dwmapi.lib")
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
 #pragma comment(lib, "winmm.lib")
-<<<<<<< HEAD
 
 
 using namespace DirectX; //opperator overloads are in the name space...
@@ -4175,92 +4160,26 @@ typedef void __stdcall locSwapInterval_t(UINT n);
 
 #if defined(OLC_PLATFORM_EMSCRIPTEN) //not done any enscripten yet...
 
-=======
-//#endif		
-typedef void __stdcall locSwapInterval_t(UINT n);
-typedef ID3D11Device* dxDevice_t;
-typedef ID3D11DeviceContext* dxDeviceContext_t;
-typedef IDXGISwapChain* dxSwapChain_t;
-
-#define CALLSTYLE __stdcall
-//#define OGL_LOAD(t, n) (t*)wglGetProcAddress(#n)
-#endif
-
-#if defined(OLC_PLATFORM_EMSCRIPTEN) //not done any enscripten yet...
-#include <EGL/egl.h>
-#include <GLES2/gl2.h>
-#define GL_GLEXT_PROTOTYPES
-#include <GLES2/gl2ext.h>
-#include <emscripten/emscripten.h>
-#define CALLSTYLE
-typedef EGLBoolean(locSwapInterval_t)(EGLDisplay display, EGLint interval);
-#define GL_CLAMP GL_CLAMP_TO_EDGE
-#define OGL_LOAD(t, n) n;
->>>>>>> 10b0cab... fully broken addition of some basics
 #endif
 
 namespace olc
 {
-<<<<<<< HEAD
-=======
-	typedef char GLchar;
-	typedef ptrdiff_t GLsizeiptr;
-	typedef GLuint CALLSTYLE locCreateShader_t(GLenum type);
-	typedef GLuint CALLSTYLE locCreateProgram_t(void);
-	typedef void CALLSTYLE locDeleteShader_t(GLuint shader);
-#if defined(OLC_PLATFORM_EMSCRIPTEN)
-	typedef void CALLSTYLE locShaderSource_t(GLuint shader, GLsizei count, const GLchar* const* string, const GLint* length);
-#else
-	typedef void CALLSTYLE locShaderSource_t(GLuint shader, GLsizei count, const GLchar** string, const GLint* length);
-#endif
-	typedef void CALLSTYLE locCompileShader_t(GLuint shader);
-	typedef void CALLSTYLE locLinkProgram_t(GLuint program);
-	typedef void CALLSTYLE locDeleteProgram_t(GLuint program);
-	typedef void CALLSTYLE locAttachShader_t(GLuint program, GLuint shader);
-	typedef void CALLSTYLE locBindBuffer_t(GLenum target, GLuint buffer);
-	typedef void CALLSTYLE locBufferData_t(GLenum target, GLsizeiptr size, const void* data, GLenum usage);
-	typedef void CALLSTYLE locGenBuffers_t(GLsizei n, GLuint* buffers);
-	typedef void CALLSTYLE locVertexAttribPointer_t(GLuint index, GLint size, GLenum type, GLboolean normalized, GLsizei stride, const void* pointer);
-	typedef void CALLSTYLE locEnableVertexAttribArray_t(GLuint index);
-	typedef void CALLSTYLE locUseProgram_t(GLuint program);
-	typedef void CALLSTYLE locBindVertexArray_t(GLuint array);
-	typedef void CALLSTYLE locGenVertexArrays_t(GLsizei n, GLuint* arrays);
-	typedef void CALLSTYLE locGetShaderInfoLog_t(GLuint shader, GLsizei bufSize, GLsizei* length, GLchar* infoLog);
-
->>>>>>> 10b0cab... fully broken addition of some basics
 	constexpr size_t OLC_MAX_VERTS = 128;
 
 	class Renderer_DX11 : public olc::Renderer
 	{
 	private:
 #if defined(OLC_PLATFORM_EMSCRIPTEN)
-<<<<<<< HEAD
 #endif
 
 #if !defined(OLC_PLATFORM_EMSCRIPTEN)
 		ID3D11Device* dxDevice = 0;
 		ID3D11DeviceContext* dxDeviceContext = 0;
 		IDXGISwapChain1* dxSwapChain = 0;
-=======
-		EGLDisplay olc_Display;
-		EGLConfig olc_Config;
-		EGLContext olc_Context;
-		EGLSurface olc_Surface;
-#endif
-
-#if defined(OLC_PLATFORM_GLUT)
-		bool mFullScreen = false;
-#else
-#if !defined(OLC_PLATFORM_EMSCRIPTEN)
-		dxDevice_t dxDevice = 0;
-		dxDeviceContext_t dxDeviceContext = 0;
-		dxSwapChain_t dxSwapChain = 0;
->>>>>>> 10b0cab... fully broken addition of some basics
 		ID3D11RenderTargetView* dxRenderTargetView = nullptr;
 		ID3D11Texture2D* dxDepthStencilBuffer = nullptr;
 		ID3D11DepthStencilView* dxDepthStencilView = nullptr;
 		ID3D11DepthStencilState* dxDepthStencilState = nullptr;
-<<<<<<< HEAD
 		ID3D11DepthStencilState* dxDepthStencilStateDefault = nullptr;
 
 		ID3D11RasterizerState* dxRasterizerStateF = nullptr;
@@ -4358,59 +4277,10 @@ namespace olc
 		locVertexF pVertexMem[OLC_MAX_VERTS];
 
 		ID3D11InputLayout* dxInputLayout;
-=======
-		ID3D11RasterizerState* dxRasterizerState = nullptr;
-		D3D11_VIEWPORT dxViewport;
-#endif
-#endif
-		bool bSync = false;
-		olc::DecalMode nDecalMode = olc::DecalMode(-1); // Thanks Gusgo & Bispoo
-#if defined(OLC_PLATFORM_X11)
-		X11::Display* olc_Display = nullptr;
-		X11::Window* olc_Window = nullptr;
-		X11::XVisualInfo* olc_VisualInfo = nullptr;
-#endif
-
-	private:
-		locCreateShader_t* locCreateShader = nullptr;
-		locShaderSource_t* locShaderSource = nullptr;
-		locCompileShader_t* locCompileShader = nullptr;
-		locDeleteShader_t* locDeleteShader = nullptr;
-		locCreateProgram_t* locCreateProgram = nullptr;
-		locDeleteProgram_t* locDeleteProgram = nullptr;
-		locLinkProgram_t* locLinkProgram = nullptr;
-		locAttachShader_t* locAttachShader = nullptr;
-		locBindBuffer_t* locBindBuffer = nullptr;
-		locBufferData_t* locBufferData = nullptr;
-		locGenBuffers_t* locGenBuffers = nullptr;
-		locVertexAttribPointer_t* locVertexAttribPointer = nullptr;
-		locEnableVertexAttribArray_t* locEnableVertexAttribArray = nullptr;
-		locUseProgram_t* locUseProgram = nullptr;
-		locBindVertexArray_t* locBindVertexArray = nullptr;
-		locGenVertexArrays_t* locGenVertexArrays = nullptr;
-		locSwapInterval_t* locSwapInterval = nullptr;
-		locGetShaderInfoLog_t* locGetShaderInfoLog = nullptr;
-
-		uint32_t m_nFS = 0;
-		uint32_t m_nVS = 0;
-		uint32_t m_nQuadShader = 0;
-		uint32_t m_vbQuad = 0;
-		uint32_t m_vaQuad = 0;
-
-		struct locVertex
-		{
-			float pos[3];
-			olc::vf2d tex;
-			olc::Pixel col;
-		};
-
-		locVertex pVertexMem[OLC_MAX_VERTS];
->>>>>>> 10b0cab... fully broken addition of some basics
 
 		olc::Renderable rendBlankQuad;
 
 	public:
-<<<<<<< HEAD
 
 		void UpdateCam() { //only needed if 3d is utilized
 
@@ -4794,36 +4664,13 @@ namespace olc
 		void PrepareDevice() override
 		{
 
-=======
-		void PrepareDevice() override
-		{
-#if defined(OLC_PLATFORM_GLUT)
-			//glutInit has to be called with main() arguments, make fake ones
-			int argc = 0;
-			char* argv[1] = { (char*)"" };
-			glutInit(&argc, argv);
-			glutInitWindowPosition(0, 0);
-			glutInitWindowSize(512, 512);
-			glutInitDisplayMode(GLUT_DOUBLE | GLUT_DEPTH | GLUT_RGBA);
-			// Creates the window and the OpenGL context for it
-			glutCreateWindow("OneLoneCoder.com - Pixel Game Engine");
-			glEnable(GL_TEXTURE_2D); // Turn on texturing
-			glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-#endif
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		olc::rcode CreateDevice(std::vector<void*> params, bool bFullScreen, bool bVSYNC) override
 		{
-<<<<<<< HEAD
 			bSync = bVSYNC;
 
 #if defined(OLC_PLATFORM_WINAPI)
-=======
-			// Create dx Context, device, and swap chain
-#if defined(OLC_PLATFORM_WINAPI)
-			// Create Device Context
->>>>>>> 10b0cab... fully broken addition of some basics
 
 			D3D_FEATURE_LEVEL featureLevels[] =
 			{
@@ -4835,30 +4682,16 @@ namespace olc
 				D3D_FEATURE_LEVEL_9_2,
 				D3D_FEATURE_LEVEL_9_1
 			};
-<<<<<<< HEAD
 			UINT createDeviceFlags = 0; //D3D11_CREATE_DEVICE_BGRA_SUPPORT should also be here if need be
 #if _DEBUG
 			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
 #endif
 
-=======
-			UINT createDeviceFlags = 0;
-#if _DEBUG
-			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
-#endif
-			createDeviceFlags = D3D11_CREATE_DEVICE_DEBUG;
-
-			/*
-			// Set Vertical Sync
-			*/
-			
->>>>>>> 10b0cab... fully broken addition of some basics
 			DEVMODEA WinMonitorInfo;
 
 			EnumDisplaySettingsA(NULL, ENUM_CURRENT_SETTINGS, &WinMonitorInfo);
 
 			DXGI_RATIONAL refreshRateStatic;
-<<<<<<< HEAD
 			refreshRateStatic.Numerator = WinMonitorInfo.dmDisplayFrequency;
 			refreshRateStatic.Denominator = 1;
 
@@ -4968,85 +4801,11 @@ namespace olc
 			dxDevice->CreateDepthStencilView(
 				dxDepthStencilBuffer,
 				nullptr,
-=======
-			refreshRateStatic.Numerator = WinMonitorInfo.dmDisplayFrequency; //0 is no refreshrate
-			refreshRateStatic.Denominator = 1;
-
-			if (locSwapInterval && bVSYNC) refreshRateStatic.Numerator = 60; //if vsync 
-
-
-			DXGI_SWAP_CHAIN_DESC swapChainDesc;
-			ZeroMemory(&swapChainDesc, sizeof(DXGI_SWAP_CHAIN_DESC));
-
-
-			swapChainDesc.BufferCount = 2;
-			swapChainDesc.BufferDesc.Width = 640; //tmp
-			swapChainDesc.BufferDesc.Height = 640; //tmp
-			swapChainDesc.BufferDesc.Format = DXGI_FORMAT_R32_UINT; // or DXGI_FORMAT_R8G8B8A8_UNORM
-			swapChainDesc.Windowed = bFullScreen;
-			swapChainDesc.OutputWindow = (HWND)(params[0]); //window to output swap chain to 
-			swapChainDesc.SampleDesc.Count = 1;
-			swapChainDesc.SampleDesc.Quality = 0;
-			swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
-			swapChainDesc.BufferDesc.RefreshRate = refreshRateStatic; //refresh rate
-			swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT; //cpu access optio nfor back buffer:
-
-
-			D3D11CreateDeviceAndSwapChain(  //create swap chain --> 
-				nullptr, //A pointer to the video adapter to use --> nothing means default for program launch is used
-				D3D_DRIVER_TYPE_HARDWARE, //direct 3d driver type: unknown [dunno], hardware [features in hardware], refrence [accuracy over speed], zero render ability driver, software [software driver - very slow], warp driver [9_1-10_1 support of high prof implment]
-				nullptr, //dll for software rasterizer if software driver is used
-				createDeviceFlags,  //device flags
-				featureLevels, //feature level to try to acsess in order
-				_countof(featureLevels), //number of elements
-				D3D11_SDK_VERSION, //sdk version
-				&swapChainDesc, //swap chain descriptor
-				&dxSwapChain, //pointer to swap chain obj used for rendering
-				&dxDevice, //adress to GPU device 
-				nullptr, //return first supported feature in featureLevel array - not used yet
-				&dxDeviceContext); //dunno
-			ID3D11Texture2D* backBuffer;
-			dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer); //get pointer to the only buffer of swapchain (I currently made 1)
-
-
-			dxDevice->CreateRenderTargetView( //make render view from buffer
-				backBuffer, //buffer input
-				nullptr,  //render target view description
-				&dxRenderTargetView); //pointer to target view port to send info to [need 2 seperate ones dealing with 2 seperate back buffers to render 2 viewports
-
-			D3D11_TEXTURE2D_DESC depthStencilBufferDesc; //depth stencil buffer obj
-			ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC)); //max texture memory size is allocated to buffer
-
-			depthStencilBufferDesc.ArraySize = 1; //array of textures length (if array)
-			depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL; //bind flags are vairous
-			depthStencilBufferDesc.CPUAccessFlags = 0; // No CPU access required. 
-			depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT; //texture format
-			depthStencilBufferDesc.Width = 640; //resolution of texture in texels width
-			depthStencilBufferDesc.Height = 640; //resolution of texture in texels height
-			depthStencilBufferDesc.MipLevels = 1; //1 means multisampled
-
-			////multisampling parameters
-			depthStencilBufferDesc.SampleDesc.Count = 1;
-			depthStencilBufferDesc.SampleDesc.Quality = 0;
-			////
-
-			depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
-
-			dxDevice->CreateTexture2D( //make 2d texture
-				&depthStencilBufferDesc,  //pointer to 2d texture resource
-				nullptr,  // sub data for 2d
-				&dxDepthStencilBuffer);
-
-			dxDevice->CreateDepthStencilView( //create depth stencil buffer view
-				dxDepthStencilBuffer,  // input depth stencil buffer
-				nullptr, //input sub buffer - Pointer to a depth-stencil-view description --> 0 means mipmap 0 is used
->>>>>>> 10b0cab... fully broken addition of some basics
 				&dxDepthStencilView);
 
 			D3D11_DEPTH_STENCIL_DESC depthStencilStateDesc;
 			ZeroMemory(&depthStencilStateDesc, sizeof(D3D11_DEPTH_STENCIL_DESC));
 
-<<<<<<< HEAD
 			depthStencilStateDesc.DepthEnable = TRUE;
 			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
 			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS_EQUAL;
@@ -5062,20 +4821,10 @@ namespace olc
 
 
 			dxDevice->CreateDepthStencilState(&depthStencilStateDesc, &dxDepthStencilStateDefault);
-=======
-			depthStencilStateDesc.DepthEnable = TRUE; // enable depth testing
-			depthStencilStateDesc.DepthWriteMask = D3D11_DEPTH_WRITE_MASK_ALL;
-			depthStencilStateDesc.DepthFunc = D3D11_COMPARISON_LESS; //depth data compairison or not -->  if the source data is less than the destination data (that is, the source data is closer to the eye), then the depth comparison passes --> render stuff
-			depthStencilStateDesc.StencilEnable = FALSE;
-			dxDevice->CreateDepthStencilState( //make depth stencil state
-				&depthStencilStateDesc, //descriptor of depth stencil
-				&dxDepthStencilState); //depth stencil state view to be outputed too
->>>>>>> 10b0cab... fully broken addition of some basics
 
 			D3D11_RASTERIZER_DESC rasterizerDesc;
 			ZeroMemory(&rasterizerDesc, sizeof(D3D11_RASTERIZER_DESC));
 
-<<<<<<< HEAD
 			rasterizerDesc.AntialiasedLineEnable = FALSE;
 			rasterizerDesc.CullMode = D3D11_CULL_NONE;
 			rasterizerDesc.DepthBias = 0;
@@ -5096,22 +4845,6 @@ namespace olc
 			dxDevice->CreateRasterizerState(
 				&rasterizerDesc,
 				&dxRasterizerStateW);
-=======
-			rasterizerDesc.AntialiasedLineEnable = FALSE; //if MSAA is off: true turns on AA
-			rasterizerDesc.CullMode = D3D11_CULL_NONE;
-			rasterizerDesc.DepthBias = 0;
-			rasterizerDesc.DepthBiasClamp = 0.0f; //max for depth
-			rasterizerDesc.DepthClipEnable = TRUE; //clip based on distance of obj 
-			rasterizerDesc.FillMode = D3D11_FILL_SOLID;
-			rasterizerDesc.FrontCounterClockwise = FALSE; //if true, a triangle will be considered front if counter clock wise,  else opposite for false
-			rasterizerDesc.MultisampleEnable = FALSE; //MSAA or not
-			rasterizerDesc.ScissorEnable = FALSE; //cut renderview or not
-			rasterizerDesc.SlopeScaledDepthBias = 0.0f;
-
-			dxDevice->CreateRasterizerState( //make rasterizer state
-				&rasterizerDesc,  //rasterizer descriptor
-				&dxRasterizerState); //rasterizer state output
->>>>>>> 10b0cab... fully broken addition of some basics
 
 			dxViewport.Width = static_cast<float>(640);
 			dxViewport.Height = static_cast<float>(640);
@@ -5119,7 +4852,6 @@ namespace olc
 			dxViewport.TopLeftY = 0.0f;
 			dxViewport.MinDepth = 0.0f;
 			dxViewport.MaxDepth = 1.0f;
-<<<<<<< HEAD
 
 #endif
 
@@ -5316,142 +5048,6 @@ namespace olc
 			dxDevice->CreateBlendState(&blendVal, &dxBlendStateDefault);
 
 			dxDevice->CreateBlendState(&blendVal, &dxBlendState);
-=======
-#endif
-
-#if defined(OLC_PLATFORM_X11)
-			using namespace X11;
-			// Linux has tighter coupling between OpenGL and X11, so we store
-			// various "platform" handles in the renderer
-			olc_Display = (X11::Display*)(params[0]);
-			olc_Window = (X11::Window*)(params[1]);
-			olc_VisualInfo = (X11::XVisualInfo*)(params[2]);
-
-			glDeviceContext = glXCreateContext(olc_Display, olc_VisualInfo, nullptr, GL_TRUE);
-			glXMakeCurrent(olc_Display, *olc_Window, glDeviceContext);
-
-			XWindowAttributes gwa;
-			XGetWindowAttributes(olc_Display, *olc_Window, &gwa);
-			glViewport(0, 0, gwa.width, gwa.height);
-
-			locSwapInterval = OGL_LOAD(locSwapInterval_t, "glXSwapIntervalEXT");
-
-			if (locSwapInterval == nullptr && !bVSYNC)
-			{
-				printf("NOTE: Could not disable VSYNC, glXSwapIntervalEXT() was not found!\n");
-				printf("      Don't worry though, things will still work, it's just the\n");
-				printf("      frame rate will be capped to your monitors refresh rate - javidx9\n");
-			}
-
-			if (locSwapInterval != nullptr && !bVSYNC)
-				locSwapInterval(olc_Display, *olc_Window, 0);
-#endif		
-
-#if defined(OLC_PLATFORM_EMSCRIPTEN)
-			EGLint const attribute_list[] = { EGL_RED_SIZE, 8, EGL_GREEN_SIZE, 8, EGL_BLUE_SIZE, 8, EGL_ALPHA_SIZE, 8, EGL_NONE };
-			EGLint const context_config[] = { EGL_CONTEXT_CLIENT_VERSION , 2, EGL_NONE };
-			EGLint num_config;
-
-			olc_Display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-			eglInitialize(olc_Display, nullptr, nullptr);
-			eglChooseConfig(olc_Display, attribute_list, &olc_Config, 1, &num_config);
-
-			/* create an EGL rendering context */
-			olc_Context = eglCreateContext(olc_Display, olc_Config, EGL_NO_CONTEXT, context_config);
-			olc_Surface = eglCreateWindowSurface(olc_Display, olc_Config, NULL, nullptr);
-			eglMakeCurrent(olc_Display, olc_Surface, olc_Surface, olc_Context);
-			//eglSwapInterval is currently a NOP, plement anyways in case it becomes supported
-			locSwapInterval = &eglSwapInterval;
-			locSwapInterval(olc_Display, bVSYNC ? 1 : 0);
-#endif
-
-#if defined(OLC_PLATFORM_GLUT)
-			mFullScreen = bFullScreen;
-			if (!bVSYNC)
-			{
-#if defined(__APPLE__)
-				GLint sync = 0;
-				CGLContextObj ctx = CGLGetCurrentContext();
-				if (ctx) CGLSetParameter(ctx, kCGLCPSwapInterval, &sync);
-#endif
-			}
-#else
-#if !defined(OLC_PLATFORM_EMSCRIPTEN)
-			glEnable(GL_TEXTURE_2D); // Turn on texturing
-			glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
-#endif
-#endif
-			// Load External OpenGL Functions
-			locCreateShader = OGL_LOAD(locCreateShader_t, glCreateShader);
-			locCompileShader = OGL_LOAD(locCompileShader_t, glCompileShader);
-			locShaderSource = OGL_LOAD(locShaderSource_t, glShaderSource);
-			locDeleteShader = OGL_LOAD(locDeleteShader_t, glDeleteShader);
-			locCreateProgram = OGL_LOAD(locCreateProgram_t, glCreateProgram);
-			locDeleteProgram = OGL_LOAD(locDeleteProgram_t, glDeleteProgram);
-			locLinkProgram = OGL_LOAD(locLinkProgram_t, glLinkProgram);
-			locAttachShader = OGL_LOAD(locAttachShader_t, glAttachShader);
-			locBindBuffer = OGL_LOAD(locBindBuffer_t, glBindBuffer);
-			locBufferData = OGL_LOAD(locBufferData_t, glBufferData);
-			locGenBuffers = OGL_LOAD(locGenBuffers_t, glGenBuffers);
-			locVertexAttribPointer = OGL_LOAD(locVertexAttribPointer_t, glVertexAttribPointer);
-			locEnableVertexAttribArray = OGL_LOAD(locEnableVertexAttribArray_t, glEnableVertexAttribArray);
-			locUseProgram = OGL_LOAD(locUseProgram_t, glUseProgram);
-			locGetShaderInfoLog = OGL_LOAD(locGetShaderInfoLog_t, glGetShaderInfoLog);
-#if !defined(OLC_PLATFORM_EMSCRIPTEN)
-			locBindVertexArray = OGL_LOAD(locBindVertexArray_t, glBindVertexArray);
-			locGenVertexArrays = OGL_LOAD(locGenVertexArrays_t, glGenVertexArrays);
-#else
-			locBindVertexArray = glBindVertexArrayOES;
-			locGenVertexArrays = glGenVertexArraysOES;
-#endif
-
-			// Load & Compile Quad Shader - assumes no errors
-			m_nFS = locCreateShader(0x8B30);
-			const GLchar* strFS =
-#if defined(__arm__) || defined(OLC_PLATFORM_EMSCRIPTEN)
-				"#version 300 es\n"
-				"precision mediump float;"
-#else
-				"#version 330 core\n"
-#endif
-				"out vec4 pixel;\n""in vec2 oTex;\n"
-				"in vec4 oCol;\n""uniform sampler2D sprTex;\n""void main(){pixel = texture(sprTex, oTex) * oCol;}";
-			locShaderSource(m_nFS, 1, &strFS, NULL);
-			locCompileShader(m_nFS);
-
-			m_nVS = locCreateShader(0x8B31);
-			const GLchar* strVS =
-#if defined(__arm__) || defined(OLC_PLATFORM_EMSCRIPTEN)
-				"#version 300 es\n"
-				"precision mediump float;"
-#else
-				"#version 330 core\n"
-#endif
-				"layout(location = 0) in vec3 aPos;\n""layout(location = 1) in vec2 aTex;\n"
-				"layout(location = 2) in vec4 aCol;\n""out vec2 oTex;\n""out vec4 oCol;\n"
-				"void main(){ float p = 1.0 / aPos.z; gl_Position = p * vec4(aPos.x, aPos.y, 0.0, 1.0); oTex = p * aTex; oCol = aCol;}";
-			locShaderSource(m_nVS, 1, &strVS, NULL);
-			locCompileShader(m_nVS);
-
-			m_nQuadShader = locCreateProgram();
-			locAttachShader(m_nQuadShader, m_nFS);
-			locAttachShader(m_nQuadShader, m_nVS);
-			locLinkProgram(m_nQuadShader);
-
-			// Create Quad
-			locGenBuffers(1, &m_vbQuad);
-			locGenVertexArrays(1, &m_vaQuad);
-			locBindVertexArray(m_vaQuad);
-			locBindBuffer(0x8892, m_vbQuad);
-
-			locVertex verts[OLC_MAX_VERTS];
-			locBufferData(0x8892, sizeof(locVertex) * OLC_MAX_VERTS, verts, 0x88E0);
-			locVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(locVertex), 0); locEnableVertexAttribArray(0);
-			locVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(locVertex), (void*)(3 * sizeof(float))); locEnableVertexAttribArray(1);
-			locVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(locVertex), (void*)(5 * sizeof(float)));	locEnableVertexAttribArray(2);
-			locBindBuffer(0x8892, 0);
-			locBindVertexArray(0);
->>>>>>> 10b0cab... fully broken addition of some basics
 
 			// Create blank texture for spriteless decals
 			rendBlankQuad.Create(1, 1);
@@ -5463,7 +5059,6 @@ namespace olc
 		olc::rcode DestroyDevice() override
 		{
 #if defined(OLC_PLATFORM_WINAPI)
-<<<<<<< HEAD
 			//TODO: find the other live objects later...
 			for (int i = 0; i < DecalTSV.size(); i++) {
 
@@ -5503,33 +5098,10 @@ namespace olc
 #endif
 #if defined(OLC_PLATFORM_EMSCRIPTEN)
 
-=======
-			wglDeleteContext(glRenderContext);
-#endif
-
-#if defined(OLC_PLATFORM_X11)
-			glXMakeCurrent(olc_Display, None, NULL);
-			glXDestroyContext(olc_Display, glDeviceContext);
-#endif
-
-#if defined(OLC_PLATFORM_GLUT)
-			glutDestroyWindow(glutGetWindow());
-#endif
-
-#if defined(OLC_PLATFORM_EMSCRIPTEN)
-			eglMakeCurrent(olc_Display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-			eglDestroyContext(olc_Display, olc_Context);
-			eglDestroySurface(olc_Display, olc_Surface);
-			eglTerminate(olc_Display);
-			olc_Display = EGL_NO_DISPLAY;
-			olc_Surface = EGL_NO_SURFACE;
-			olc_Context = EGL_NO_CONTEXT;
->>>>>>> 10b0cab... fully broken addition of some basics
 #endif
 			return olc::rcode::OK;
 		}
 
-<<<<<<< HEAD
 		//TODO: make emscripten work? I think it has a dx to web assembley thing
 
 		void DisplayFrame() override
@@ -5542,56 +5114,22 @@ namespace olc
 
 #if defined(OLC_PLATFORM_EMSCRIPTEN)
 
-=======
-		void DisplayFrame() override
-		{
-#if defined(OLC_PLATFORM_WINAPI)
-			SwapBuffers(glDeviceContext);
-			if (bSync) DwmFlush(); // Woooohooooooo!!!! SMOOOOOOOTH!
-#endif	
-
-#if defined(OLC_PLATFORM_X11)
-			X11::glXSwapBuffers(olc_Display, *olc_Window);
-#endif		
-
-#if defined(OLC_PLATFORM_GLUT)
-			glutSwapBuffers();
-#endif
-
-#if defined(OLC_PLATFORM_EMSCRIPTEN)
-			eglSwapBuffers(olc_Display, olc_Surface);
->>>>>>> 10b0cab... fully broken addition of some basics
 #endif
 		}
 
 		void PrepareDrawing() override
 		{
-<<<<<<< HEAD
 #if defined(OLC_GFX_DIRECTX113D)
 			UpdateWorld(); //only usful if 3d is implemented - may make this a unused function - so enable 3d with #define OLC_GFX_DIRECTX113D - else it can hurt perf, which I'm not a fan of
 #endif
 			SetDecalMode(olc::DecalMode::NORMAL); //reset decal mode...
 
-=======
-			glEnable(GL_BLEND);
-			nDecalMode = DecalMode::NORMAL;
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			locUseProgram(m_nQuadShader);
-			locBindVertexArray(m_vaQuad);
-
-#if defined(OLC_PLATFORM_EMSCRIPTEN)
-			locVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(locVertex), 0); locEnableVertexAttribArray(0);
-			locVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(locVertex), (void*)(3 * sizeof(float))); locEnableVertexAttribArray(1);
-			locVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(locVertex), (void*)(5 * sizeof(float)));	locEnableVertexAttribArray(2);
-#endif
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		void SetDecalMode(const olc::DecalMode& mode) override
 		{
 			if (mode != nDecalMode)
 			{
-<<<<<<< HEAD
 				D3D11_BLEND_DESC blendVal;
 
 				switch (mode)
@@ -5898,62 +5436,12 @@ namespace olc
 				DecalIndexDraw(decal);
 				//DecalShaderUnset(); <-- lose perf if you unbind to rebind
 			}
-=======
-				switch (mode)
-				{
-				case olc::DecalMode::NORMAL: glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	break;
-				case olc::DecalMode::ADDITIVE: glBlendFunc(GL_SRC_ALPHA, GL_ONE); break;
-				case olc::DecalMode::MULTIPLICATIVE: glBlendFunc(GL_DST_COLOR, GL_ONE_MINUS_SRC_ALPHA);	break;
-				case olc::DecalMode::STENCIL: glBlendFunc(GL_ZERO, GL_SRC_ALPHA); break;
-				case olc::DecalMode::ILLUMINATE: glBlendFunc(GL_ONE_MINUS_SRC_ALPHA, GL_SRC_ALPHA);	break;
-				case olc::DecalMode::WIREFRAME: glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);	break;
-				}
-
-				nDecalMode = mode;
-			}
-		}
-
-		void DrawLayerQuad(const olc::vf2d& offset, const olc::vf2d& scale, const olc::Pixel tint) override
-		{
-			locBindBuffer(0x8892, m_vbQuad);
-			locVertex verts[4] = {
-				{{-1.0f, -1.0f, 1.0}, {0.0f * scale.x + offset.x, 1.0f * scale.y + offset.y}, tint},
-				{{+1.0f, -1.0f, 1.0}, {1.0f * scale.x + offset.x, 1.0f * scale.y + offset.y}, tint},
-				{{-1.0f, +1.0f, 1.0}, {0.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, tint},
-				{{+1.0f, +1.0f, 1.0}, {1.0f * scale.x + offset.x, 0.0f * scale.y + offset.y}, tint},
-			};
-
-			locBufferData(0x8892, sizeof(locVertex) * 4, verts, 0x88E0);
-			glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-		}
-
-		void DrawDecal(const olc::DecalInstance& decal) override
-		{
-			SetDecalMode(decal.mode);
-			if (decal.decal == nullptr)
-				glBindTexture(GL_TEXTURE_2D, rendBlankQuad.Decal()->id);
-			else
-				glBindTexture(GL_TEXTURE_2D, decal.decal->id);
-
-			locBindBuffer(0x8892, m_vbQuad);
-
-			for (uint32_t i = 0; i < decal.points; i++)
-				pVertexMem[i] = { { decal.pos[i].x, decal.pos[i].y, decal.w[i] }, { decal.uv[i].x, decal.uv[i].y }, decal.tint[i] };
-
-			locBufferData(0x8892, sizeof(locVertex) * decal.points, pVertexMem, 0x88E0);
-
-			if (nDecalMode == DecalMode::WIREFRAME)
-				glDrawArrays(GL_LINE_LOOP, 0, decal.points);
-			else
-				glDrawArrays(GL_TRIANGLE_FAN, 0, decal.points);
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		uint32_t CreateTexture(const uint32_t width, const uint32_t height, const bool filtered, const bool clamp) override
 		{
 			UNUSED(width);
 			UNUSED(height);
-<<<<<<< HEAD
 			uint32_t id = DecalTUV.size();
 
 			ID3D11ShaderResourceView* trash_memV = nullptr; //fine to have a tmp
@@ -6029,26 +5517,10 @@ namespace olc
 			else
 			{
 				tmpSampleDesc.Filter = D3D11_FILTER{ D3D11_FILTER_MIN_MAG_MIP_POINT };
-=======
-			uint32_t id = 0;
-			glGenTextures(1, &id);
-			glBindTexture(GL_TEXTURE_2D, id);
-
-			if (filtered)
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-			}
-			else
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
->>>>>>> 10b0cab... fully broken addition of some basics
 			}
 
 			if (clamp)
 			{
-<<<<<<< HEAD
 
 				tmpSampleDesc.AddressU = D3D11_TEXTURE_ADDRESS_MODE{ D3D11_TEXTURE_ADDRESS_CLAMP };
 				tmpSampleDesc.AddressV = D3D11_TEXTURE_ADDRESS_MODE{ D3D11_TEXTURE_ADDRESS_CLAMP };
@@ -6080,25 +5552,11 @@ namespace olc
 			DecalTSR.push_back(gpuTexS);
 			DecalSamp.push_back(trash_memSamp);
 
-=======
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-			}
-			else
-			{
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-			}
-#if !defined(OLC_PLATFORM_EMSCRIPTEN)
-			glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-#endif
->>>>>>> 10b0cab... fully broken addition of some basics
 			return id;
 		}
 
 		uint32_t DeleteTexture(const uint32_t id) override
 		{
-<<<<<<< HEAD
 			SafeRelease(DecalTUV[id]);
 			SafeRelease(DecalTSV[id]);
 			SafeRelease(DecalSamp[id]);
@@ -6110,15 +5568,11 @@ namespace olc
 			DecalSamp[id] = nullptr;
 			DecalTUR[id] = nullptr;
 			DecalTSR[id] = nullptr;
-=======
-			glDeleteTextures(1, &id);
->>>>>>> 10b0cab... fully broken addition of some basics
 			return id;
 		}
 
 		void UpdateTexture(uint32_t id, olc::Sprite* spr) override
 		{
-<<<<<<< HEAD
 
 			D3D11_MAPPED_SUBRESOURCE resource;
 
@@ -6134,48 +5588,29 @@ namespace olc
 			}
 
 			dxDeviceContext->Unmap(DecalTSR[id], 0);
-=======
-			UNUSED(id);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, spr->width, spr->height, 0, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		void ReadTexture(uint32_t id, olc::Sprite* spr) override
 		{
-<<<<<<< HEAD
-=======
-			glReadPixels(0, 0, spr->width, spr->height, GL_RGBA, GL_UNSIGNED_BYTE, spr->GetData());
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		void ApplyTexture(uint32_t id) override
 		{
-<<<<<<< HEAD
 
-=======
-			glBindTexture(GL_TEXTURE_2D, id);
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		void ClearBuffer(olc::Pixel p, bool bDepth) override
 		{
-<<<<<<< HEAD
 
 
 			float ClearColor[4] = { float(p.r) / 255.0f, float(p.g) / 255.0f, float(p.b) / 255.0f, float(p.a) / 255.0f };
 			dxDeviceContext->ClearRenderTargetView(dxRenderTargetView, ClearColor);
 
 			if (bDepth) dxDeviceContext->ClearDepthStencilView(dxDepthStencilView, D3D11_CLEAR_DEPTH, 1, 0); 
-=======
-			glClearColor(float(p.r) / 255.0f, float(p.g) / 255.0f, float(p.b) / 255.0f, float(p.a) / 255.0f);
-			glClear(GL_COLOR_BUFFER_BIT);
-			if (bDepth) glClear(GL_DEPTH_BUFFER_BIT);
->>>>>>> 10b0cab... fully broken addition of some basics
 		}
 
 		void UpdateViewport(const olc::vi2d& pos, const olc::vi2d& size) override
 		{
-<<<<<<< HEAD
 			//thank you for finding bugs and testing the window resize code @Frosty!
 			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
 			if (InitialSize == false) {
@@ -6343,20 +5778,6 @@ namespace olc
 
 // O------------------------------------------------------------------------------O
 // | END RENDERER: dx11                 (muh winAPI is done - OH NO!)             |
-=======
-#if defined(OLC_PLATFORM_GLUT)
-			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
-#else
-			glViewport(pos.x, pos.y, size.x, size.y);
-#endif
-		}
-	};
-}
-#endif
-
-// O------------------------------------------------------------------------------O
-// | START RENDERER: dx11 (Dunno feature set needed yet) (muh winAPI)             |
->>>>>>> 10b0cab... fully broken addition of some basics
 // O------------------------------------------------------------------------------O
 #pragma endregion
 
@@ -7928,11 +7349,7 @@ namespace olc
 		renderer = std::make_unique<olc::Renderer_DX10>();
 #endif
 
-<<<<<<< HEAD
 #if defined (OLC_GFX_DIRECTX11) //&& defined (OLC_PLATFORM_WINAPI)
-=======
-#if defined (OLC_GFX_DIRECTX11) && defined (OLC_PLATFORM_WINAPI)
->>>>>>> 10b0cab... fully broken addition of some basics
 		renderer = std::make_unique<olc::Renderer_DX11>();
 #endif
 
