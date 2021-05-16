@@ -4556,8 +4556,6 @@ namespace olc
 			}
 			return "";
 		}
-
-
 		
 		//I was going to allow a ID3D11InputLayout& - but then I realized that switching input layout is slow 
 		template< class ShaderClass >
