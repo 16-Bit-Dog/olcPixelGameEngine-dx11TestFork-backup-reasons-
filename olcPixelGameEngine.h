@@ -4218,6 +4218,10 @@ namespace olc
 		bool InitialSize = false;
 		float initialSizeX = 0;
 		float initialSizeY = 0;
+		float LastWidth = 0;
+		float LastHeight = 0;
+		float LastPosX = 0;
+		float LastPosY = 0;
 
 
 #endif
@@ -4625,7 +4629,7 @@ namespace olc
 			swapChainDescW.SampleDesc.Count = 1;
 			swapChainDescW.SampleDesc.Quality = 0;
 			swapChainDescW.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-			swapChainDescW.Scaling = DXGI_SCALING_STRETCH;
+			swapChainDescW.Scaling = DXGI_SCALING_NONE;
 			//swapChainDesc.BufferDesc.Scaling = DXGI_SCALING_STRETCH;
 
 			swapChainDescF.Scaling = DXGI_MODE_SCALING_STRETCHED;
@@ -5772,20 +5776,98 @@ namespace olc
 			}
 
 			else {
+				if (LastWidth != size.x ||
+					LastHeight != size.y ||
+					LastPosX != pos.x ||
+					LastPosY != pos.y) {
+
+					dxViewport.Width = size.x;
+					dxViewport.Height = size.y;
+
+					dxViewport.TopLeftX = pos.x;
+
+					dxViewport.TopLeftY = pos.y;
 
 
-				if (pos.x > 0 || pos.y > 0) {//to stop window resizing: mouse positon is not working nicly with dx11
-					DXGI_MODE_DESC descModeTMP;
-					descModeTMP.Width = initialSizeX;
-					descModeTMP.Height = initialSizeY;
-					descModeTMP.RefreshRate = swapChainDescF.RefreshRate;
-					descModeTMP.Format = swapChainDescW.Format;
 
-					dxSwapChain->ResizeTarget(&descModeTMP);
+					LastWidth = dxViewport.Width;
+					LastHeight = dxViewport.Height;
+					LastPosX = dxViewport.TopLeftX;
+					LastPosY = dxViewport.TopLeftY;
+
+
+					ID3D11RenderTargetView* tmpRendTarV = nullptr;
+
+					dxDeviceContext->OMSetRenderTargets(1, &tmpRendTarV, nullptr);
+
+					SafeRelease(dxDepthStencilBuffer);
+					dxRenderTargetView->Release(); // Microsoft::WRL::ComPtr here does a Release();
+					dxDepthStencilView->Release();
+					dxDeviceContext->Flush();
+					//resize buffers
+					dxSwapChain->ResizeBuffers(0, size.x + pos.x, size.y + pos.y,
+						swapChainDescW.Format, swapChainDescW.Flags);
+
+					ID3D11Texture2D* backBuffer;
+
+					dxSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), (LPVOID*)&backBuffer);
+
+					dxDevice->CreateRenderTargetView(
+						backBuffer,
+						nullptr,
+						&dxRenderTargetView);
+
+					SafeRelease(backBuffer);
+
+					dxDeviceContext->OMSetRenderTargets(1, &dxRenderTargetView, NULL);
+
+
+					D3D11_TEXTURE2D_DESC depthStencilBufferDesc;
+					ZeroMemory(&depthStencilBufferDesc, sizeof(D3D11_TEXTURE2D_DESC));
+
+					depthStencilBufferDesc.ArraySize = 1;
+					depthStencilBufferDesc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+					depthStencilBufferDesc.CPUAccessFlags = 0;
+					depthStencilBufferDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+					depthStencilBufferDesc.Width = size.x + pos.x;
+					depthStencilBufferDesc.Height = size.y + pos.y;
+					depthStencilBufferDesc.MipLevels = 1;
+
+					depthStencilBufferDesc.SampleDesc.Count = 1;
+					depthStencilBufferDesc.SampleDesc.Quality = 0;
+
+					depthStencilBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+					dxDevice->CreateTexture2D(
+						&depthStencilBufferDesc,
+						nullptr,
+						&dxDepthStencilBuffer);
+
+					dxDevice->CreateDepthStencilView(
+						dxDepthStencilBuffer,
+						nullptr,
+						&dxDepthStencilView);
+
+					dxDeviceContext->RSSetViewports(1, &dxViewport);
+					
+
+					//TODO: clear background when resize looks like a driver issue.. so not really a todo
+					//to fix you need to move around the window after resized... *sigh* <-- I tried debugging this for a few hours and this is all that I came up with
+					//I tried even force resizing again - but that programmically left the issue there
+
+					/*
+					if (pos.x > 0 || pos.y > 0) {//to stop window resizing: mouse positon is not working nicly with dx11
+						DXGI_MODE_DESC descModeTMP;
+						descModeTMP.Width = initialSizeX;
+						descModeTMP.Height = initialSizeY;
+						descModeTMP.RefreshRate = swapChainDescF.RefreshRate;
+						descModeTMP.Format = swapChainDescW.Format;
+
+						dxSwapChain->ResizeTarget(&descModeTMP);
+					}
+					*/
 				}
-
 			}
-
 #endif
 		}
 	};
