@@ -5305,7 +5305,7 @@ namespace olc
 				(5),
 				0,
 				0);
-			//TODO: make a instanced draw func for decals - decal + array of pos + array of color + other - much faster this way
+			//TODO: make a instanced draw func for decals - idea: 
 		}
 		void LayerShaderUnset() {
 			ID3D11ShaderResourceView* unbind = nullptr;
@@ -5467,7 +5467,7 @@ namespace olc
 				D3D11_MAPPED_SUBRESOURCE resource;
 
 				//dxDeviceContext->IASetVertexBuffers(0, 1, NULL, NULL, 0);
-				dxDeviceContext->Map(m_vbQuad, 0, D3D11_MAP_WRITE_DISCARD, 0, &resource);
+				dxDeviceContext->Map(m_vbQuad, 0, D3D11_MAP_WRITE_NO_OVERWRITE, 0, &resource);
 				memcpy(resource.pData, pVertexMem, sizeof(pVertexMem));
 				dxDeviceContext->Unmap(m_vbQuad, 0);
 				DecalLayoutVertexIndexStageSet();
@@ -5711,7 +5711,7 @@ namespace olc
 			if (!mFullScreen) glutReshapeWindow(size.x, size.y);
 #else 
 			//			//IDXGISwapChain::SetFullscreenState <-- alternate from fullscreen to windowed - vise versa... TODO: could be very useful
-			if (InitialSize == false ) { //TODO:  LOOK AT NOT REAL TO DO; may be usless
+			if (InitialSize == false ) { 
 				InitialSize = true;
 				initialSizeX = size.x;
 				initialSizeY = size.y;
